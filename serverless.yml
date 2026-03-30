@@ -1,0 +1,75 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: thevisionariesclub
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: codexai
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: codexai-backend
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+  environment:
+    USERS_TABLE: users-${sls:stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.USERS_TABLE}"
+
+functions:
+  createUser:
+    handler: src/handlers/createUser.handler
+    events:
+      - httpApi:
+          path: /users
+          method: post
+
+  getUser:
+    handler: src/handlers/getUser.handler
+    events:
+      - httpApi:
+          path: /users/{userId}
+          method: get
+
+  updateUser:
+    handler: src/handlers/updateUser.handler
+    events:
+      - httpApi:
+          path: /users/{userId}
+          method: put
+
+  deleteUser:
+    handler: src/handlers/deleteUser.handler
+    events:
+      - httpApi:
+          path: /users/{userId}
+          method: delete
+
+  listUsers:
+    handler: src/handlers/listUsers.handler
+    events:
+      - httpApi:
+          path: /users
+          method: get
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH

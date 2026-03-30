@@ -1,0 +1,22 @@
+{
+  "name": "codexai-backend",
+  "version": "1.0.0",
+  "description": "CodexAI Backend API",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "dev": "serverless offline start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1600.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-offline": "^13.2.4"
+  }
+}
