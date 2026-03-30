@@ -16,6 +16,11 @@ const TABLE_NAME = process.env.COURSES_TABLE;
  *   - link: string (required)
  *   - colorClass: object (required) - {from, to, icon, badge, border, hoverBorder, hoverShadow}
  *   - isFlagship: boolean (optional)
+ *   - image: string (optional) - course image URL
+ *   - color: string (optional) - primary color for the course
+ *   - highlights: string[] (optional) - key highlights of the course
+ *   - curriculum: CurriculumModule[] (optional) - [{week, title, topics}]
+ *   - outcomes: string[] (optional) - learning outcomes
  * 
  * Returns:
  *   - 201: Course created successfully
@@ -53,6 +58,25 @@ exports.handler = async (event) => {
       });
     }
 
+    // Validate optional fields if provided
+    if (body.highlights && !Array.isArray(body.highlights)) {
+      return formatResponse(400, {
+        error: 'highlights must be an array',
+      });
+    }
+
+    if (body.curriculum && !Array.isArray(body.curriculum)) {
+      return formatResponse(400, {
+        error: 'curriculum must be an array',
+      });
+    }
+
+    if (body.outcomes && !Array.isArray(body.outcomes)) {
+      return formatResponse(400, {
+        error: 'outcomes must be an array',
+      });
+    }
+
     const courseId = uuidv4();
     const timestamp = new Date().toISOString();
 
@@ -69,6 +93,11 @@ exports.handler = async (event) => {
         link: body.link,
         colorClass: body.colorClass,
         isFlagship: body.isFlagship || false,
+        ...(body.image && { image: body.image }),
+        ...(body.color && { color: body.color }),
+        ...(body.highlights && { highlights: body.highlights }),
+        ...(body.curriculum && { curriculum: body.curriculum }),
+        ...(body.outcomes && { outcomes: body.outcomes }),
         createdAt: timestamp,
         updatedAt: timestamp,
       },

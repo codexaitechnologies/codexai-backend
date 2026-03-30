@@ -5,6 +5,10 @@ app: codexai
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: codexai-backend
 
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -12,7 +16,9 @@ provider:
   environment:
     USERS_TABLE: users-${sls:stage}
     COURSES_TABLE: courses-${sls:stage}
-    SES_FROM_EMAIL: adarshchaudhary03@gmail.com
+    BROCHURES_TABLE: brochures-${sls:stage}
+    GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
+    GMAIL_APP_PASSWORD: ${env:GMAIL_APP_PASSWORD, 'dpgd vzxq pipd fmtz'}
     DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
 
   httpApi:
@@ -52,11 +58,8 @@ provider:
           Resource: 
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.USERS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COURSES_TABLE}"
-        - Effect: Allow
-          Action:
-            - ses:SendEmail
-            - ses:SendRawEmail
-          Resource: "*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURES_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURES_TABLE}/index/*"
 
 functions:
   createUser:
@@ -129,6 +132,41 @@ functions:
           path: /courses
           method: get
 
+  createBrochure:
+    handler: src/handlers/createBrochure.handler
+    events:
+      - httpApi:
+          path: /brochures
+          method: post
+
+  getBrochure:
+    handler: src/handlers/getBrochure.handler
+    events:
+      - httpApi:
+          path: /brochures/{brochureId}
+          method: get
+
+  updateBrochure:
+    handler: src/handlers/updateBrochure.handler
+    events:
+      - httpApi:
+          path: /brochures/{brochureId}
+          method: put
+
+  deleteBrochure:
+    handler: src/handlers/deleteBrochure.handler
+    events:
+      - httpApi:
+          path: /brochures/{brochureId}
+          method: delete
+
+  listBrochures:
+    handler: src/handlers/listBrochures.handler
+    events:
+      - httpApi:
+          path: /brochures
+          method: get
+
 resources:
   Resources:
     UsersTable:
@@ -154,3 +192,24 @@ resources:
         KeySchema:
           - AttributeName: courseId
             KeyType: HASH
+
+    BrochuresTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.BROCHURES_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: brochureId
+            AttributeType: S
+          - AttributeName: courseId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: brochureId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: courseId-index
+            KeySchema:
+              - AttributeName: courseId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL

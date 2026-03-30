@@ -18,6 +18,11 @@ const TABLE_NAME = process.env.COURSES_TABLE;
  *   - link: string
  *   - colorClass: object - {from, to, icon, badge, border, hoverBorder, hoverShadow}
  *   - isFlagship: boolean
+ *   - image: string
+ *   - color: string
+ *   - highlights: string[]
+ *   - curriculum: CurriculumModule[] - [{week, title, topics}]
+ *   - outcomes: string[]
  * 
  * Returns:
  *   - 200: Course updated successfully
@@ -57,7 +62,7 @@ exports.handler = async (event) => {
     const expressionAttributeNames = {};
 
     // Define allowed updatable fields
-    const allowedFields = ['title', 'duration', 'iconName', 'description', 'features', 'projectCount', 'link', 'colorClass', 'isFlagship'];
+    const allowedFields = ['title', 'duration', 'iconName', 'description', 'features', 'projectCount', 'link', 'colorClass', 'isFlagship', 'image', 'color', 'highlights', 'curriculum', 'outcomes'];
 
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) {

@@ -13,10 +13,12 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.1600.0",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "nodemailer": "^6.9.7"
   },
   "devDependencies": {
     "serverless": "^3.38.0",
-    "serverless-offline": "^13.2.4"
+    "serverless-offline": "^13.2.4",
+    "serverless-dotenv-plugin": "^4.0.2"
   }
 }

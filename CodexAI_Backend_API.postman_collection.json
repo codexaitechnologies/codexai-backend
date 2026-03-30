@@ -22,7 +22,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"course\": \"Web Development\"\n}"
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"course\": \"Web Development\",\n  \"courseId\": \"550e8400-e29b-41d4-a716-446655440001\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/users",
@@ -166,7 +166,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Web Development\",\n  \"duration\": \"12 weeks\",\n  \"iconName\": \"Code\",\n  \"description\": \"Learn full-stack web development with modern technologies\",\n  \"features\": [\n    \"HTML/CSS\",\n    \"JavaScript\",\n    \"React\",\n    \"Node.js\",\n    \"MongoDB\"\n  ],\n  \"projectCount\": \"5\",\n  \"link\": \"/courses/web-dev\",\n  \"colorClass\": {\n    \"from\": \"from-blue-500\",\n    \"to\": \"to-cyan-500\",\n    \"icon\": \"text-blue-600\",\n    \"badge\": \"bg-blue-100\",\n    \"border\": \"border-blue-200\",\n    \"hoverBorder\": \"hover:border-blue-400\",\n    \"hoverShadow\": \"hover:shadow-blue-500/20\"\n  },\n  \"isFlagship\": true\n}"
+              "raw": "{\n  \"title\": \"Web Development\",\n  \"duration\": \"12 weeks\",\n  \"iconName\": \"Code\",\n  \"description\": \"Learn full-stack web development with modern technologies\",\n  \"features\": [\n    \"HTML/CSS\",\n    \"JavaScript\",\n    \"React\",\n    \"Node.js\",\n    \"MongoDB\"\n  ],\n  \"projectCount\": \"5\",\n  \"link\": \"/courses/web-dev\",\n  \"colorClass\": {\n    \"from\": \"from-blue-500\",\n    \"to\": \"to-cyan-500\",\n    \"icon\": \"text-blue-600\",\n    \"badge\": \"bg-blue-100\",\n    \"border\": \"border-blue-200\",\n    \"hoverBorder\": \"hover:border-blue-400\",\n    \"hoverShadow\": \"hover:shadow-blue-500/20\"\n  },\n  \"isFlagship\": true,\n  \"image\": \"https://example.com/courses/web-dev.jpg\",\n  \"color\": \"#0066FF\",\n  \"highlights\": [\n    \"Industry-standard technologies\",\n    \"Live project experience\",\n    \"1-on-1 mentoring sessions\",\n    \"Job placement assistance\"\n  ],\n  \"curriculum\": [\n    {\n      \"week\": \"1-2\",\n      \"title\": \"HTML & CSS Fundamentals\",\n      \"topics\": [\n        \"HTML5 structure\",\n        \"CSS layouts\",\n        \"Responsive design\",\n        \"Accessibility basics\"\n      ]\n    },\n    {\n      \"week\": \"3-5\",\n      \"title\": \"JavaScript Essentials\",\n      \"topics\": [\n        \"ES6+ syntax\",\n        \"DOM manipulation\",\n        \"Async programming\",\n        \"API integration\"\n      ]\n    }\n  ],\n  \"outcomes\": [\n    \"Build responsive websites using HTML, CSS, and JavaScript\",\n    \"Master React for building dynamic user interfaces\",\n    \"Develop backend APIs with Node.js and Express\",\n    \"Design and manage databases with MongoDB\",\n    \"Deploy applications to production environments\"\n  ]\n}"
             },
             "url": {
               "raw": "{{base_url}}/courses",
@@ -217,7 +217,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"duration\": \"10 weeks\",\n  \"projectCount\": \"6\",\n  \"isFlagship\": false\n}"
+              "raw": "{\n  \"duration\": \"10 weeks\",\n  \"projectCount\": \"6\",\n  \"isFlagship\": false,\n  \"image\": \"https://example.com/courses/web-dev-updated.jpg\",\n  \"color\": \"#FF6600\",\n  \"highlights\": [\n    \"Advanced techniques\",\n    \"Portfolio projects\",\n    \"Internship opportunities\"\n  ],\n  \"curriculum\": [\n    {\n      \"week\": \"1-3\",\n      \"title\": \"HTML & CSS Mastery\",\n      \"topics\": [\n        \"Semantic HTML\",\n        \"CSS Grid\",\n        \"Flexbox\",\n        \"Mobile optimization\"\n      ]\n    }\n  ],\n  \"outcomes\": [\n    \"Deploy full-stack applications\",\n    \"Lead development teams\",\n    \"Contribute to open-source\"\n  ]\n}"
             },
             "url": {
               "raw": "{{base_url}}/courses/{{courseId}}",
@@ -300,6 +300,156 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Brochures",
+      "item": [
+        {
+          "name": "Create Brochure",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"brochureLink\": \"https://example.com/brochures/web-dev.pdf\",\n  \"description\": \"Comprehensive web development course brochure with curriculum details\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/brochures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brochures"
+              ]
+            },
+            "description": "Creates a new brochure associated with a course. The courseId must exist in the courses table."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Brochure",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/brochures/{{brochureId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brochures",
+                "{{brochureId}}"
+              ]
+            },
+            "description": "Retrieves a specific brochure by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Brochure",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brochureLink\": \"https://example.com/brochures/web-dev-updated.pdf\",\n  \"description\": \"Updated comprehensive web development course brochure\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/brochures/{{brochureId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brochures",
+                "{{brochureId}}"
+              ]
+            },
+            "description": "Updates one or more fields of an existing brochure. All fields are optional. If updating courseId, it must exist in the courses table."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Brochure",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/brochures/{{brochureId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brochures",
+                "{{brochureId}}"
+              ]
+            },
+            "description": "Deletes a brochure permanently from the database"
+          },
+          "response": []
+        },
+        {
+          "name": "List Brochures",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/brochures?limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brochures"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items to return (default: 10, max: 100)"
+                },
+                {
+                  "key": "courseId",
+                  "value": "",
+                  "description": "Filter brochures by courseId (optional)",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "Base64-encoded cursor for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all brochures with optional filtering by courseId and pagination support"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -320,6 +470,12 @@
       "value": "550e8400-e29b-41d4-a716-446655440001",
       "type": "string",
       "description": "Replace with an actual course ID from your database"
+    },
+    {
+      "key": "brochureId",
+      "value": "550e8400-e29b-41d4-a716-446655440002",
+      "type": "string",
+      "description": "Replace with an actual brochure ID from your database"
     }
   ]
 }

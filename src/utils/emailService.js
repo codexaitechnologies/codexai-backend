@@ -1,6 +1,21 @@
-const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
 
-const ses = new AWS.SES({ region: process.env.AWS_REGION });
+/**
+ * Create Gmail transporter with App Password
+ */
+const createTransporter = () => {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('Missing GMAIL_USER or GMAIL_APP_PASSWORD environment variables');
+  }
+
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+};
 
 /**
  * Sends a welcome email to a new user with course brochure
@@ -224,33 +239,19 @@ Website: www.codexai.com
 This is an automated email. Please do not reply directly. For support, visit our website or contact our team.
   `;
 
-  const params = {
-    Source: process.env.SES_FROM_EMAIL || 'adarshchaudhary03@gmail.com',
-    Destination: {
-      ToAddresses: [email],
-    },
-    Message: {
-      Subject: {
-        Data: `Welcome to CodexAI - ${course} Course Registration Confirmed`,
-        Charset: 'UTF-8',
-      },
-      Body: {
-        Html: {
-          Data: htmlTemplate,
-          Charset: 'UTF-8',
-        },
-        Text: {
-          Data: textTemplate,
-          Charset: 'UTF-8',
-        },
-      },
-    },
+  const mailOptions = {
+    from: process.env.GMAIL_USER,
+    to: email,
+    subject: `Welcome to CodexAI - ${course} Course Registration Confirmed`,
+    html: htmlTemplate,
+    text: textTemplate,
   };
 
   try {
-    const result = await ses.sendEmail(params).promise();
+    const transporter = createTransporter();
+    const result = await transporter.sendMail(mailOptions);
     console.log('Welcome email sent successfully:', {
-      MessageId: result.MessageId,
+      MessageId: result.messageId,
       email: email,
       course: course,
     });
