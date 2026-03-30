@@ -1,0 +1,325 @@
+{
+  "info": {
+    "_postman_id": "codexai-backend-api",
+    "name": "CodexAI Backend API",
+    "description": "Complete REST API for CodexAI backend with User and Course management endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "codexai"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"course\": \"Web Development\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Creates a new user with the provided information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Retrieves a specific user by their ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Jane Doe\",\n  \"course\": \"Data Science\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Updates one or more fields of an existing user. All fields are optional."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Deletes a user permanently from the database"
+          },
+          "response": []
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users?limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items to return (default: 10, max: 100)"
+                },
+                {
+                  "key": "lastEvaluatedKey",
+                  "value": "",
+                  "description": "Base64-encoded key for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all users with optional pagination support"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Web Development\",\n  \"duration\": \"12 weeks\",\n  \"iconName\": \"Code\",\n  \"description\": \"Learn full-stack web development with modern technologies\",\n  \"features\": [\n    \"HTML/CSS\",\n    \"JavaScript\",\n    \"React\",\n    \"Node.js\",\n    \"MongoDB\"\n  ],\n  \"projectCount\": \"5\",\n  \"link\": \"/courses/web-dev\",\n  \"colorClass\": {\n    \"from\": \"from-blue-500\",\n    \"to\": \"to-cyan-500\",\n    \"icon\": \"text-blue-600\",\n    \"badge\": \"bg-blue-100\",\n    \"border\": \"border-blue-200\",\n    \"hoverBorder\": \"hover:border-blue-400\",\n    \"hoverShadow\": \"hover:shadow-blue-500/20\"\n  },\n  \"isFlagship\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses"
+              ]
+            },
+            "description": "Creates a new course with the provided information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/courses/{{courseId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses",
+                "{{courseId}}"
+              ]
+            },
+            "description": "Retrieves a specific course by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duration\": \"10 weeks\",\n  \"projectCount\": \"6\",\n  \"isFlagship\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courses/{{courseId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses",
+                "{{courseId}}"
+              ]
+            },
+            "description": "Updates one or more fields of an existing course. All fields are optional."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/courses/{{courseId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses",
+                "{{courseId}}"
+              ]
+            },
+            "description": "Deletes a course permanently from the database"
+          },
+          "response": []
+        },
+        {
+          "name": "List Courses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/courses?limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items to return (default: 10, max: 100)"
+                },
+                {
+                  "key": "flagship",
+                  "value": "true",
+                  "description": "Filter to only flagship courses (true/false)",
+                  "disabled": true
+                },
+                {
+                  "key": "lastEvaluatedKey",
+                  "value": "",
+                  "description": "Base64-encoded key for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all courses with optional filtering and pagination support"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://<api-id>.lambda-url.ap-south-1.on.aws",
+      "type": "string",
+      "description": "Replace <api-id> with your actual API Gateway endpoint after deployment"
+    },
+    {
+      "key": "userId",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string",
+      "description": "Replace with an actual user ID from your database"
+    },
+    {
+      "key": "courseId",
+      "value": "550e8400-e29b-41d4-a716-446655440001",
+      "type": "string",
+      "description": "Replace with an actual course ID from your database"
+    }
+  ]
+}

@@ -11,6 +11,33 @@ provider:
   region: ap-south-1
   environment:
     USERS_TABLE: users-${sls:stage}
+    COURSES_TABLE: courses-${sls:stage}
+    SES_FROM_EMAIL: adarshchaudhary03@gmail.com
+    DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
+
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:3000
+        - http://localhost:5173
+        - https://codexai-65d23.web.app
+        - https://codexai.co.in
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+        - X-Amz-Date
+        - X-Api-Key
+        - X-Amz-Security-Token
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      allowCredentials: true
+      maxAge: 3600
+
   iam:
     role:
       statements:
@@ -22,7 +49,14 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.USERS_TABLE}"
+          Resource: 
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.USERS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COURSES_TABLE}"
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+          Resource: "*"
 
 functions:
   createUser:
@@ -60,6 +94,41 @@ functions:
           path: /users
           method: get
 
+  createCourse:
+    handler: src/handlers/createCourse.handler
+    events:
+      - httpApi:
+          path: /courses
+          method: post
+
+  getCourse:
+    handler: src/handlers/getCourse.handler
+    events:
+      - httpApi:
+          path: /courses/{courseId}
+          method: get
+
+  updateCourse:
+    handler: src/handlers/updateCourse.handler
+    events:
+      - httpApi:
+          path: /courses/{courseId}
+          method: put
+
+  deleteCourse:
+    handler: src/handlers/deleteCourse.handler
+    events:
+      - httpApi:
+          path: /courses/{courseId}
+          method: delete
+
+  listCourses:
+    handler: src/handlers/listCourses.handler
+    events:
+      - httpApi:
+          path: /courses
+          method: get
+
 resources:
   Resources:
     UsersTable:
@@ -72,4 +141,16 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: userId
+            KeyType: HASH
+
+    CoursesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.COURSES_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: courseId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: courseId
             KeyType: HASH
