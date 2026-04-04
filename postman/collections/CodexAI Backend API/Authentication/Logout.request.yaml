@@ -1,0 +1,15 @@
+$kind: http-request
+description: Logout user and invalidate all tokens. Can use accessToken in body
+  or Authorization header.
+url: "{{base_url}}/auth/logout"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+body:
+  type: text
+  content: |-
+    {
+      "accessToken": "{{accessToken}}"
+    }
+order: 7000

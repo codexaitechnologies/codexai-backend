@@ -1,0 +1,15 @@
+$kind: http-request
+name: Confirm Email
+description: Verify email address with OTP code sent to email
+url: "{{base_url}}/auth/confirm-email"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "adarshchaudhary03@gmail.com",
+      "confirmationCode": "733914"
+    }
+order: 3000

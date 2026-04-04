@@ -20,6 +20,8 @@ provider:
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
     GMAIL_APP_PASSWORD: ${env:GMAIL_APP_PASSWORD, 'dpgd vzxq pipd fmtz'}
     DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
+    COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+    COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
 
   httpApi:
     cors:
@@ -28,6 +30,7 @@ provider:
         - http://localhost:5173
         - https://codexai-65d23.web.app
         - https://codexai.co.in
+        - https://www.codexai.co.in
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -60,6 +63,24 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COURSES_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURES_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURES_TABLE}/index/*"
+        - Effect: Allow
+          Action:
+            - cognito-idp:SignUp
+            - cognito-idp:InitiateAuth
+            - cognito-idp:ConfirmSignUp
+            - cognito-idp:ResendConfirmationCode
+            - cognito-idp:ForgotPassword
+            - cognito-idp:ConfirmForgotPassword
+            - cognito-idp:GlobalSignOut
+            - cognito-idp:GetUser
+            - cognito-idp:GetUserAttributeVerificationCode
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminSetUserPassword
+            - cognito-idp:AdminInitiateAuth
+            - cognito-idp:AdminUserGlobalSignOut
+          Resource:
+            - "arn:aws:cognito-idp:${aws:region}:${aws:accountId}:userpool/${aws:region}_*"
 
 functions:
   createUser:
@@ -167,6 +188,63 @@ functions:
           path: /brochures
           method: get
 
+  # Authentication Handlers
+  signUpWithEmailPassword:
+    handler: src/handlers/signUpWithEmailPassword.handler
+    events:
+      - httpApi:
+          path: /auth/signup
+          method: post
+
+  loginWithEmailPassword:
+    handler: src/handlers/loginWithEmailPassword.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+
+  confirmEmailVerification:
+    handler: src/handlers/confirmEmailVerification.handler
+    events:
+      - httpApi:
+          path: /auth/confirm-email
+          method: post
+
+  resendEmailCode:
+    handler: src/handlers/resendEmailCode.handler
+    events:
+      - httpApi:
+          path: /auth/resend-code
+          method: post
+
+  forgetPassword:
+    handler: src/handlers/forgetPassword.handler
+    events:
+      - httpApi:
+          path: /auth/forgot-password
+          method: post
+
+  resetPassword:
+    handler: src/handlers/resetPassword.handler
+    events:
+      - httpApi:
+          path: /auth/reset-password
+          method: post
+
+  logout:
+    handler: src/handlers/logout.handler
+    events:
+      - httpApi:
+          path: /auth/logout
+          method: post
+
+  signUpWithGoogle:
+    handler: src/handlers/signUpWithGoogle.handler
+    events:
+      - httpApi:
+          path: /auth/google-signup
+          method: post
+
 resources:
   Resources:
     UsersTable:
@@ -213,3 +291,76 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: codexai-userpool-${sls:stage}
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Mutable: false
+            Required: true
+          - Name: phone_number
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: name
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+        AutoVerifiedAttributes:
+          - email
+        EmailVerificationMessage: 'Your CodexAI verification code is {####}'
+        EmailVerificationSubject: 'CodexAI Email Verification'
+        MfaConfiguration: OPTIONAL
+        EnabledMfas:
+          - SOFTWARE_TOKEN_MFA
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Name: verified_email
+              Priority: 1
+            - Name: verified_phone_number
+              Priority: 2
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: codexai-app-client-${sls:stage}
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+        PreventUserExistenceErrors: ENABLED
+        EnableTokenRevocation: true
+        AllowedOAuthFlows:
+          - code
+          - implicit
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+        AllowedOAuthFlowsUserPoolClient: true
+        CallbackURLs:
+          - http://localhost:3000/callback
+          - http://localhost:5173/callback
+          - https://codexai-65d23.web.app/callback
+          - https://codexai.co.in/callback
+          - https://www.codexai.co.in/callback
+        LogoutURLs:
+          - http://localhost:3000/logout
+          - http://localhost:5173/logout
+          - https://codexai-65d23.web.app/logout
+          - https://codexai.co.in/logout
+          - https://www.codexai.co.in/logout
+        SupportedIdentityProviders:
+          - COGNITO
+        GenerateSecret: false

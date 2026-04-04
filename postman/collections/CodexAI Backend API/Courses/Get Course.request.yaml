@@ -1,0 +1,7 @@
+$kind: http-request
+description: Retrieves a specific course by its ID
+url: "{{base_url}}/courses/{{courseId}}"
+method: GET
+headers:
+  Content-Type: application/json
+order: 2000

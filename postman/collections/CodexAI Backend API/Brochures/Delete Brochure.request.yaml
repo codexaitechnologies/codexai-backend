@@ -1,0 +1,7 @@
+$kind: http-request
+description: Deletes a brochure permanently from the database
+url: "{{base_url}}/brochures/{{brochureId}}"
+method: DELETE
+headers:
+  Content-Type: application/json
+order: 4000

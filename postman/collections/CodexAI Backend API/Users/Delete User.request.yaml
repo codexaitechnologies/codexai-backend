@@ -1,0 +1,7 @@
+$kind: http-request
+description: Deletes a user permanently from the database
+url: "{{base_url}}/users/{{userId}}"
+method: DELETE
+headers:
+  Content-Type: application/json
+order: 4000

@@ -1,0 +1,15 @@
+$kind: http-request
+description: Updates one or more fields of an existing brochure. All fields are
+  optional. If updating courseId, it must exist in the courses table.
+url: "{{base_url}}/brochures/{{brochureId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "brochureLink": "https://example.com/brochures/web-dev-updated.pdf",
+      "description": "Updated comprehensive web development course brochure"
+    }
+order: 3000

@@ -1,0 +1,7 @@
+$kind: http-request
+description: Retrieves a specific brochure by its ID
+url: "{{base_url}}/brochures/{{brochureId}}"
+method: GET
+headers:
+  Content-Type: application/json
+order: 2000

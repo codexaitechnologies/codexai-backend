@@ -1,0 +1,15 @@
+$kind: http-request
+description: Retrieves a paginated list of all users with optional pagination support
+url: "{{base_url}}/users?limit=10"
+method: GET
+headers:
+  Content-Type: application/json
+queryParams:
+  - key: limit
+    value: "10"
+    description: "Number of items to return (default: 10, max: 100)"
+  - key: lastEvaluatedKey
+    value: ""
+    disabled: true
+    description: Base64-encoded key for pagination
+order: 5000

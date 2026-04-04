@@ -1,0 +1,8 @@
+$kind: collection
+description: Complete REST API for CodexAI backend with User and Course management endpoints
+variables:
+  base_url: https://jbd1szydoc.lambda-url.ap-south-1.on.aws
+  accessToken: ""
+  userId: 550e8400-e29b-41d4-a716-446655440000
+  courseId: 550e8400-e29b-41d4-a716-446655440001
+  brochureId: 550e8400-e29b-41d4-a716-446655440002

@@ -1,0 +1,7 @@
+$kind: http-request
+description: Retrieves a specific user by their ID
+url: "{{base_url}}/users/{{userId}}"
+method: GET
+headers:
+  Content-Type: application/json
+order: 2000

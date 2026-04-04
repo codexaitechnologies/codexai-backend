@@ -14,7 +14,8 @@
   "dependencies": {
     "aws-sdk": "^2.1600.0",
     "uuid": "^9.0.1",
-    "nodemailer": "^6.9.7"
+    "nodemailer": "^6.9.7",
+    "google-auth-library": "^9.0.0"
   },
   "devDependencies": {
     "serverless": "^3.38.0",

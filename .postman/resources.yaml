@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: 40740771-dead-4e3c-8a18-6f359f09b2e9
+
+localResources:
+  collections:
+    - ../CodexAI_Backend_API.postman_collection.json
+cloudResources:
+  collections:
+    ../postman/collections/CodexAI Backend API: 66c95475-884d-4576-ac75-2e47bfbf4d2a

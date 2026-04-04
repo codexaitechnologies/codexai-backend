@@ -1,0 +1,39 @@
+$kind: http-request
+description: Updates one or more fields of an existing course. All fields are optional.
+url: "{{base_url}}/courses/{{courseId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "duration": "10 weeks",
+      "projectCount": "6",
+      "isFlagship": false,
+      "image": "https://example.com/courses/web-dev-updated.jpg",
+      "color": "#FF6600",
+      "highlights": [
+        "Advanced techniques",
+        "Portfolio projects",
+        "Internship opportunities"
+      ],
+      "curriculum": [
+        {
+          "week": "1-3",
+          "title": "HTML & CSS Mastery",
+          "topics": [
+            "Semantic HTML",
+            "CSS Grid",
+            "Flexbox",
+            "Mobile optimization"
+          ]
+        }
+      ],
+      "outcomes": [
+        "Deploy full-stack applications",
+        "Lead development teams",
+        "Contribute to open-source"
+      ]
+    }
+order: 3000
