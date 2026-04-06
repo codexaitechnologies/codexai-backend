@@ -17,17 +17,29 @@ provider:
     USERS_TABLE: users-${sls:stage}
     COURSES_TABLE: courses-${sls:stage}
     BROCHURES_TABLE: brochures-${sls:stage}
+    PAYMENTS_TABLE: payments-${sls:stage}
+    COUPONS_TABLE: coupons-${sls:stage}
+    SUPPORT_TICKETS_TABLE: support-tickets-${sls:stage}
+    SUPPORT_DOCUMENTS_BUCKET: ${self:service}-support-documents-${sls:stage}
+    SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'support@codexai.com'}
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
     GMAIL_APP_PASSWORD: ${env:GMAIL_APP_PASSWORD, 'dpgd vzxq pipd fmtz'}
     DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
+    COGNITO_USER_POOL_ID:
+      Ref: CognitoUserPool
+    COGNITO_CLIENT_ID:
+      Ref: CognitoUserPoolClient
 
   httpApi:
     cors:
       allowedOrigins:
         - http://localhost:3000
         - http://localhost:5173
+        - http://localhost:5174
         - https://codexai-65d23.web.app
         - https://codexai.co.in
+        - https://www.codexai.co.in
+        - https://codexai-admin.web.app
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -60,6 +72,41 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COURSES_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURES_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURES_TABLE}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.PAYMENTS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.PAYMENTS_TABLE}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COUPONS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}/index/*"
+        - Effect: Allow
+          Action:
+            - cognito-idp:SignUp
+            - cognito-idp:InitiateAuth
+            - cognito-idp:ConfirmSignUp
+            - cognito-idp:ResendConfirmationCode
+            - cognito-idp:ForgotPassword
+            - cognito-idp:ConfirmForgotPassword
+            - cognito-idp:GlobalSignOut
+            - cognito-idp:GetUser
+            - cognito-idp:GetUserAttributeVerificationCode
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminSetUserPassword
+            - cognito-idp:AdminInitiateAuth
+            - cognito-idp:AdminUserGlobalSignOut
+          Resource:
+            - "arn:aws:cognito-idp:${aws:region}:${aws:accountId}:userpool/${aws:region}_*"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+          Resource:
+            - "arn:aws:s3:::${self:service}-support-documents-${sls:stage}/*"
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+          Resource:
+            - "arn:aws:s3:::${self:service}-support-documents-${sls:stage}"
 
 functions:
   createUser:
@@ -167,6 +214,172 @@ functions:
           path: /brochures
           method: get
 
+  # Authentication Handlers
+  signUpWithEmailPassword:
+    handler: src/handlers/signUpWithEmailPassword.handler
+    events:
+      - httpApi:
+          path: /auth/signup
+          method: post
+
+  loginWithEmailPassword:
+    handler: src/handlers/loginWithEmailPassword.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+
+  confirmEmailVerification:
+    handler: src/handlers/confirmEmailVerification.handler
+    events:
+      - httpApi:
+          path: /auth/confirm-email
+          method: post
+
+  resendEmailCode:
+    handler: src/handlers/resendEmailCode.handler
+    events:
+      - httpApi:
+          path: /auth/resend-code
+          method: post
+
+  forgetPassword:
+    handler: src/handlers/forgetPassword.handler
+    events:
+      - httpApi:
+          path: /auth/forgot-password
+          method: post
+
+  resetPassword:
+    handler: src/handlers/resetPassword.handler
+    events:
+      - httpApi:
+          path: /auth/reset-password
+          method: post
+
+  logout:
+    handler: src/handlers/logout.handler
+    events:
+      - httpApi:
+          path: /auth/logout
+          method: post
+
+  signUpWithGoogle:
+    handler: src/handlers/signUpWithGoogle.handler
+    events:
+      - httpApi:
+          path: /auth/google-signup
+          method: post
+
+  # Payment Handlers
+  createOrder:
+    handler: src/handlers/createOrder.handler
+    events:
+      - httpApi:
+          path: /payments/create-order
+          method: post
+
+  verifyPayment:
+    handler: src/handlers/verifyPayment.handler
+    events:
+      - httpApi:
+          path: /payments/verify
+          method: post
+
+  getOrderStatus:
+    handler: src/handlers/getOrderStatus.handler
+    events:
+      - httpApi:
+          path: /payments/order/{orderId}
+          method: get
+
+  getAllPayments:
+    handler: src/handlers/getAllPayments.handler
+    events:
+      - httpApi:
+          path: /payments
+          method: get
+
+  getPaymentById:
+    handler: src/handlers/getPaymentById.handler
+    events:
+      - httpApi:
+          path: /payments/{paymentId}
+          method: get
+
+  getPaymentsByUserId:
+    handler: src/handlers/getPaymentsByUserId.handler
+    events:
+      - httpApi:
+          path: /payments/user/{userId}
+          method: get
+
+  razorpayWebhook:
+    handler: src/handlers/razorpayWebhook.handler
+    events:
+      - httpApi:
+          path: /api/razorpay/webhook
+          method: post
+
+  # Coupon Handlers
+  getCoupons:
+    handler: src/handlers/getCoupons.handler
+    events:
+      - httpApi:
+          path: /coupons
+          method: get
+
+  validateCoupon:
+    handler: src/handlers/validateCoupon.handler
+    events:
+      - httpApi:
+          path: /coupons/validate
+          method: post
+
+  getCouponById:
+    handler: src/handlers/getCouponById.handler
+    events:
+      - httpApi:
+          path: /coupons/{couponCode}
+          method: get
+
+  createCoupon:
+    handler: src/handlers/createCoupon.handler
+    events:
+      - httpApi:
+          path: /coupons/create
+          method: post
+
+  updateCoupon:
+    handler: src/handlers/updateCoupon.handler
+    events:
+      - httpApi:
+          path: /coupons/update/{couponCode}
+          method: put
+
+  deleteCoupon:
+    handler: src/handlers/deleteCoupon.handler
+    events:
+      - httpApi:
+          path: /coupons/delete/{couponCode}
+          method: delete
+
+  # Support Document Upload Handler
+  uploadDocument:
+    handler: src/handlers/uploadDocument.handler
+    events:
+      - httpApi:
+          path: /support/upload-document
+          method: post
+
+  # Support Query Submission Handler
+  submitSupportQuery:
+    handler: src/handlers/submitSupportQuery.handler
+    events:
+      - httpApi:
+          path: /support/submit-query
+          method: post
+
 resources:
   Resources:
     UsersTable:
@@ -211,5 +424,205 @@ resources:
             KeySchema:
               - AttributeName: courseId
                 KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    PaymentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PAYMENTS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: paymentId
+            AttributeType: S
+          - AttributeName: orderId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: paymentId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: orderId-index
+            KeySchema:
+              - AttributeName: orderId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: email-createdAt-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: userId-createdAt-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    CouponsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.COUPONS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: couponCode
+            AttributeType: S
+          - AttributeName: isActive
+            AttributeType: N
+          - AttributeName: expiresAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: couponCode
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: isActive-expiresAt-index
+            KeySchema:
+              - AttributeName: isActive
+                KeyType: HASH
+              - AttributeName: expiresAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: codexai-userpool-${sls:stage}
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Mutable: false
+            Required: true
+          - Name: phone_number
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: name
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+        AutoVerifiedAttributes:
+          - email
+        EmailVerificationMessage: 'Your CodexAI verification code is {####}'
+        EmailVerificationSubject: 'CodexAI Email Verification'
+        MfaConfiguration: OPTIONAL
+        EnabledMfas:
+          - SOFTWARE_TOKEN_MFA
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Name: verified_email
+              Priority: 1
+            - Name: verified_phone_number
+              Priority: 2
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: codexai-app-client-${sls:stage}
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+        PreventUserExistenceErrors: ENABLED
+        EnableTokenRevocation: true
+        AllowedOAuthFlows:
+          - code
+          - implicit
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+        AllowedOAuthFlowsUserPoolClient: true
+        CallbackURLs:
+          - http://localhost:3000/callback
+          - http://localhost:5173/callback
+          - https://codexai-65d23.web.app/callback
+          - https://codexai.co.in/callback
+          - https://www.codexai.co.in/callback
+        LogoutURLs:
+          - http://localhost:3000/logout
+          - http://localhost:5173/logout
+          - https://codexai-65d23.web.app/logout
+          - https://codexai.co.in/logout
+          - https://www.codexai.co.in/logout
+        SupportedIdentityProviders:
+          - COGNITO
+        GenerateSecret: false
+
+    SupportDocumentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-support-documents-${sls:stage}
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
+        VersioningConfiguration:
+          Status: Enabled
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteOldVersions
+              Status: Enabled
+              NoncurrentVersionExpirationInDays: 30
+            - Id: DeleteExpiredDocuments
+              Status: Enabled
+              ExpirationInDays: 90
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+
+    SupportTicketsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.SUPPORT_TICKETS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: ticketId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ticketId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email-createdAt-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: status-createdAt-index
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL

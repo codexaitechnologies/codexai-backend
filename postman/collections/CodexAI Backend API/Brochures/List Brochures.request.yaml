@@ -1,0 +1,20 @@
+$kind: http-request
+description: Retrieves a paginated list of all brochures with optional filtering
+  by courseId and pagination support
+url: "{{base_url}}/brochures?limit=10"
+method: GET
+headers:
+  Content-Type: application/json
+queryParams:
+  - key: limit
+    value: "10"
+    description: "Number of items to return (default: 10, max: 100)"
+  - key: courseId
+    value: ""
+    disabled: true
+    description: Filter brochures by courseId (optional)
+  - key: cursor
+    value: ""
+    disabled: true
+    description: Base64-encoded cursor for pagination
+order: 5000

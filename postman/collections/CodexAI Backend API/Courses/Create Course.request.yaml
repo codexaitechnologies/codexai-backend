@@ -1,0 +1,72 @@
+$kind: http-request
+description: Creates a new course with the provided information
+url: "{{base_url}}/courses"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: >-
+    {
+      "title": "Web Development",
+      "duration": "12 weeks",
+      "iconName": "Code",
+      "description": "Learn full-stack web development with modern technologies",
+      "features": [
+        "HTML/CSS",
+        "JavaScript",
+        "React",
+        "Node.js",
+        "MongoDB"
+      ],
+      "projectCount": "5",
+      "link": "/courses/web-dev",
+      "colorClass": {
+        "from": "from-blue-500",
+        "to": "to-cyan-500",
+        "icon": "text-blue-600",
+        "badge": "bg-blue-100",
+        "border": "border-blue-200",
+        "hoverBorder": "hover:border-blue-400",
+        "hoverShadow": "hover:shadow-blue-500/20"
+      },
+      "isFlagship": true,
+      "image": "https://example.com/courses/web-dev.jpg",
+      "color": "#0066FF",
+      "highlights": [
+        "Industry-standard technologies",
+        "Live project experience",
+        "1-on-1 mentoring sessions",
+        "Job placement assistance"
+      ],
+      "curriculum": [
+        {
+          "week": "1-2",
+          "title": "HTML & CSS Fundamentals",
+          "topics": [
+            "HTML5 structure",
+            "CSS layouts",
+            "Responsive design",
+            "Accessibility basics"
+          ]
+        },
+        {
+          "week": "3-5",
+          "title": "JavaScript Essentials",
+          "topics": [
+            "ES6+ syntax",
+            "DOM manipulation",
+            "Async programming",
+            "API integration"
+          ]
+        }
+      ],
+      "outcomes": [
+        "Build responsive websites using HTML, CSS, and JavaScript",
+        "Master React for building dynamic user interfaces",
+        "Develop backend APIs with Node.js and Express",
+        "Design and manage databases with MongoDB",
+        "Deploy applications to production environments"
+      ]
+    }
+order: 1000

@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body);
 
     // Validate required fields
-    const requiredFields = ['title', 'duration', 'iconName', 'description', 'features', 'projectCount', 'link', 'colorClass'];
+    const requiredFields = ['title', 'duration', 'iconName', 'description', 'features', 'projectCount', 'link', 'colorClass', 'price'];
     const missingFields = requiredFields.filter(field => !body[field]);
 
     if (missingFields.length > 0) {
@@ -77,6 +77,12 @@ exports.handler = async (event) => {
       });
     }
 
+    if(body.price && (typeof body.price !== 'number' || body.price < 0)) {
+      return formatResponse(400, {
+        error: 'price must be a non-negative number',
+      });
+    }
+
     const courseId = uuidv4();
     const timestamp = new Date().toISOString();
 
@@ -88,6 +94,7 @@ exports.handler = async (event) => {
         duration: body.duration,
         iconName: body.iconName,
         description: body.description,
+        price: body.price || 1,
         features: body.features,
         projectCount: body.projectCount,
         link: body.link,

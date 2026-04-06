@@ -1,0 +1,15 @@
+$kind: http-request
+description: Update fields of an existing coupon (value, maxUses, expiresAt, isActive, etc.)
+url: "{{base_url}}/coupons/update/NEWYEAR100"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "value": 150,
+      "maxUses": 1000,
+      "isActive": true
+    }
+order: 4000

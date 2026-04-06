@@ -1,0 +1,13 @@
+$kind: http-request
+description: Resend email verification code to user's email address
+url: "{{base_url}}/auth/resend-code"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "john@example.com"
+    }
+order: 4000

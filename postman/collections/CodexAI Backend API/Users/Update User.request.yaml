@@ -1,0 +1,14 @@
+$kind: http-request
+description: Updates one or more fields of an existing user. All fields are optional.
+url: "{{base_url}}/users/{{userId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "fullName": "Jane Doe",
+      "course": "Data Science"
+    }
+order: 3000

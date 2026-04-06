@@ -1,0 +1,14 @@
+$kind: http-request
+description: Sign up or login with Google OAuth. (Implementation pending -
+  awaiting Google OAuth token validation)
+url: "{{base_url}}/auth/google-signup"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "googleIdToken": "<google-id-token>"
+    }
+order: 8000

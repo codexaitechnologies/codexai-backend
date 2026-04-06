@@ -1,0 +1,17 @@
+$kind: http-request
+description: Creates a new user with the provided information
+url: "{{base_url}}/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "fullName": "John Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+91-9876543210",
+      "course": "Web Development",
+      "courseId": "550e8400-e29b-41d4-a716-446655440001"
+    }
+order: 1000

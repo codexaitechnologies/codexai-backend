@@ -1,0 +1,12 @@
+$kind: collection
+description: Complete REST API for CodexAI backend with User and Course management endpoints
+variables:
+  base_url: https://jbd1szydoc.execute-api.ap-south-1.amazonaws.com
+  accessToken: ""
+  userId: 550e8400-e29b-41d4-a716-446655440000
+  courseId: 550e8400-e29b-41d4-a716-446655440001
+  brochureId: 550e8400-e29b-41d4-a716-446655440002
+  orderId: order_2QlLg5lIcTuTYr
+  paymentId: pay_2QlLg5lIcTuTYr
+  couponCode: FLAT100
+  razorpaySignature: 9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f114332d8401e0949a3d

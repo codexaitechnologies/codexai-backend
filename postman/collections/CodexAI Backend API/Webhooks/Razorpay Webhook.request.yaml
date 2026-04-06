@@ -1,0 +1,33 @@
+$kind: http-request
+description: Server-to-server webhook from Razorpay. Automatic enrollment safety
+  net if frontend fails. Not meant for manual testing - Razorpay sends these
+  automatically. For setup, see RAZORPAY_WEBHOOK_GUIDE.md
+url: "{{base_url}}/api/razorpay/webhook"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Razorpay-Signature: signature_from_razorpay
+body:
+  type: text
+  content: |-
+    {
+      "event": "payment.authorized",
+      "payload": {
+        "payment": {
+          "id": "pay_xxxxx",
+          "order_id": "order_xxxxx",
+          "amount": 50000,
+          "email": "student@example.com",
+          "status": "captured",
+          "method": "card",
+          "created_at": 1712217000,
+          "notes": {
+            "fullName": "Student Name",
+            "phoneNumber": "+91-1234567890",
+            "courseId": "course-id",
+            "course": "Web Development"
+          }
+        }
+      }
+    }
+order: 1000

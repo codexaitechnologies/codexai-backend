@@ -1,0 +1,7 @@
+$kind: http-request
+description: Deletes a course permanently from the database
+url: "{{base_url}}/courses/{{courseId}}"
+method: DELETE
+headers:
+  Content-Type: application/json
+order: 4000

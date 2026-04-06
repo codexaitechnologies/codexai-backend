@@ -1,0 +1,21 @@
+$kind: http-request
+description: "Create a Razorpay payment order. Optional: include couponCode to
+  apply discount."
+url: "{{base_url}}/payments/create-order"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "amount": 500,
+      "currency": "INR",
+      "email": "student@example.com",
+      "fullName": "John Doe",
+      "phoneNumber": "+91-9876543210",
+      "description": "Web Development Course",
+      "courseId": "550e8400-e29b-41d4-a716-446655440001",
+      "couponCode": "FLAT100"
+    }
+order: 1000

@@ -1,0 +1,15 @@
+$kind: http-request
+description: Login user with email and password. Returns accessToken, idToken,
+  and refreshToken.
+url: "{{base_url}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "john@example.com",
+      "password": "SecurePass123"
+    }
+order: 2000

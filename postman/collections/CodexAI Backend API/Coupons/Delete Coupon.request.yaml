@@ -1,0 +1,7 @@
+$kind: http-request
+description: Delete a coupon code permanently from the system
+url: "{{base_url}}/coupons/delete/NEWYEAR100"
+method: DELETE
+headers:
+  Content-Type: application/json
+order: 5000

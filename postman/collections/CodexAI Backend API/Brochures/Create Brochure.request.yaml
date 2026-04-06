@@ -1,0 +1,16 @@
+$kind: http-request
+description: Creates a new brochure associated with a course. The courseId must
+  exist in the courses table.
+url: "{{base_url}}/brochures"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: >-
+    {
+      "courseId": "550e8400-e29b-41d4-a716-446655440001",
+      "brochureLink": "https://example.com/brochures/web-dev.pdf",
+      "description": "Comprehensive web development course brochure with curriculum details"
+    }
+order: 1000

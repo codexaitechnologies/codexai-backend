@@ -1,0 +1,16 @@
+$kind: http-request
+description: Verify payment signature and confirm payment after customer
+  completes Razorpay flow
+url: "{{base_url}}/payments/verify"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: >-
+    {
+      "razorpay_order_id": "order_2QlLg5lIcTuTYr",
+      "razorpay_payment_id": "pay_2QlLg5lIcTuTYr",
+      "razorpay_signature": "9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f114332d8401e0949a3d"
+    }
+order: 2000

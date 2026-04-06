@@ -62,7 +62,7 @@ exports.handler = async (event) => {
     const expressionAttributeNames = {};
 
     // Define allowed updatable fields
-    const allowedFields = ['title', 'duration', 'iconName', 'description', 'features', 'projectCount', 'link', 'colorClass', 'isFlagship', 'image', 'color', 'highlights', 'curriculum', 'outcomes'];
+    const allowedFields = ['title', 'duration', 'iconName', 'description', 'features', 'projectCount', 'link', 'colorClass', 'isFlagship', 'image', 'color', 'highlights', 'curriculum', 'outcomes','price'];
 
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) {
