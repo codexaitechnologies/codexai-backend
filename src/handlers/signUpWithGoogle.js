@@ -227,6 +227,10 @@ exports.handler = async (event) => {
       picture: picture,
       idToken: idToken,
       provider: 'Google',
+      user: {
+        email: email,
+        name: fullName,
+      },
       note: 'This user is authenticated via Google. Use email/password login is disabled.',
     });
   } catch (error) {

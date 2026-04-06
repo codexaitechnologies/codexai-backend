@@ -1,0 +1,14 @@
+$kind: http-request
+description: Validate a coupon code for a given amount and get the discount calculation
+url: "{{base_url}}/coupons/validate"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "couponCode": "FLAT100",
+      "amount": 1500
+    }
+order: 6000

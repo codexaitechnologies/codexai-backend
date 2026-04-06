@@ -52,6 +52,10 @@ exports.handler = async (event) => {
       message: 'User registered successfully. Please check your email for verification code.',
       userSub: signUpResult.UserSub,
       codeDeliveryDetails: signUpResult.CodeDeliveryDetails,
+      user: {
+        email: body.email,
+        name: body.fullName,
+      },
     });
   } catch (error) {
     console.error('Sign up error:', error);

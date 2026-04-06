@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get the current status of a payment order by order ID
+url: "{{base_url}}/payments/order/order_2QlLg5lIcTuTYr"
+method: GET
+headers:
+  Content-Type: application/json
+order: 5000

@@ -1,0 +1,21 @@
+$kind: http-request
+description: "Submit a support query/ticket. Categories: technical, billing,
+  account, course, general. Documents are optional S3 URLs."
+url: "{{base_url}}/support/submit-query"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: >-
+    {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+91-9876543210",
+      "category": "technical",
+      "description": "I am facing an issue with course access. The course materials are not loading properly.",
+      "documents": [
+        "https://s3.ap-south-1.amazonaws.com/codexai-support-documents-dev/john@example.com/1712300000_screenshot.png"
+      ]
+    }
+order: 2000

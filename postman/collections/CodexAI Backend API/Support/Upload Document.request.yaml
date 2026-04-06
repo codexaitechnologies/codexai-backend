@@ -1,0 +1,17 @@
+$kind: http-request
+description: "Upload support documents to S3. File must be base64 encoded. Max
+  10MB. Allowed types: PDF, DOC, DOCX, XLS, XLSX, images, TXT, ZIP"
+url: "{{base_url}}/support/upload-document"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+body:
+  type: text
+  content: >-
+    {
+      "file": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "filename": "receipt.pdf",
+      "contentType": "application/pdf"
+    }
+order: 1000

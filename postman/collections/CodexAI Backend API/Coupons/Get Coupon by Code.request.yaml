@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get detailed information about a specific coupon by its code
+url: "{{base_url}}/coupons/FLAT100"
+method: GET
+headers:
+  Content-Type: application/json
+order: 2000

@@ -1,0 +1,21 @@
+$kind: http-request
+description: Create a new coupon code. Type can be 'flat' (₹ amount) or
+  'percentage' (% discount)
+url: "{{base_url}}/coupons/create"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "couponCode": "NEWYEAR100",
+      "type": "flat",
+      "value": 100,
+      "description": "New Year Special - ₹100 off",
+      "minAmount": 500,
+      "maxDiscount": null,
+      "maxUses": 500,
+      "expiresAt": "2026-12-31T23:59:59.000Z"
+    }
+order: 3000

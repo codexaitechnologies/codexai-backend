@@ -1,4 +1,4 @@
-const { confirmSignUp } = require('../utils/cognito');
+const { confirmSignUp, getUserByEmail } = require('../utils/cognito');
 const { dynamodb, formatResponse, handleError } = require('../utils/dynamodb');
 const { v4: uuidv4 } = require('uuid');
 
@@ -30,11 +30,14 @@ exports.handler = async (event) => {
     // Confirm sign up in Cognito
     await confirmSignUp(body.email, body.confirmationCode);
 
+    // Fetch user attributes from Cognito
+    const cognitoUser = await getUserByEmail(body.email);
+
     // Create user record in DynamoDB if it doesn't exist
-    const userId = uuidv4();
+    const userId = cognitoUser.sub; // Use Cognito sub as userId
     const existingUser = await dynamodb.get({
       TableName: USERS_TABLE,
-      Key: { userId: body.email }, // Using email as lookup key
+      Key: { userId: userId },
     }).promise().catch(() => null);
 
     if (!existingUser?.Item) {
@@ -43,6 +46,8 @@ exports.handler = async (event) => {
         Item: {
           userId: userId,
           email: body.email,
+          fullName: cognitoUser.fullName,
+          phoneNumber: cognitoUser.phoneNumber,
           emailVerified: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -52,10 +57,12 @@ exports.handler = async (event) => {
       // Update existing user to mark email as verified
       await dynamodb.update({
         TableName: USERS_TABLE,
-        Key: { userId: existingUser.Item.userId },
-        UpdateExpression: 'SET emailVerified = :true, updatedAt = :now',
+        Key: { userId: userId },
+        UpdateExpression: 'SET emailVerified = :true, fullName = :fullName, phoneNumber = :phoneNumber, updatedAt = :now',
         ExpressionAttributeValues: {
           ':true': true,
+          ':fullName': cognitoUser.fullName,
+          ':phoneNumber': cognitoUser.phoneNumber,
           ':now': new Date().toISOString(),
         },
       }).promise();

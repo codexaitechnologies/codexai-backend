@@ -4,6 +4,7 @@ const { formatResponse, handleError } = require('../utils/dynamodb');
 /**
  * Login user with email and password
  * Required fields: email, password
+ * Returns: tokens, user email, and name for localStorage
  */
 exports.handler = async (event) => {
   try {
@@ -53,12 +54,25 @@ exports.handler = async (event) => {
       });
     }
 
+    // Decode idToken to extract user attributes
+    const idTokenParts = authResult.AuthenticationResult.IdToken.split('.');
+    const decodedPayload = JSON.parse(Buffer.from(idTokenParts[1], 'base64').toString('utf-8'));
+    
+    const userName = decodedPayload.name || decodedPayload['given_name'] || 'User';
+    const userEmail = decodedPayload.email || body.email;
+    const phoneNumber = decodedPayload.phone_number || '';
+
     return formatResponse(200, {
       message: 'Login successful',
       accessToken: authResult.AuthenticationResult.AccessToken,
       idToken: authResult.AuthenticationResult.IdToken,
       refreshToken: authResult.AuthenticationResult.RefreshToken,
       expiresIn: authResult.AuthenticationResult.ExpiresIn,
+      user: {
+        email: userEmail,
+        name: userName,
+        phoneNumber: phoneNumber,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);

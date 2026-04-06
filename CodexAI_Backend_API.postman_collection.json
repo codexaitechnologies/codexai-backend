@@ -684,6 +684,357 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"currency\": \"INR\",\n  \"email\": \"student@example.com\",\n  \"fullName\": \"John Doe\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"description\": \"Web Development Course\",\n  \"courseId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"couponCode\": \"FLAT100\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/create-order",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "create-order"
+              ]
+            },
+            "description": "Create a Razorpay payment order. Optional: include couponCode to apply discount."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razorpay_order_id\": \"order_2QlLg5lIcTuTYr\",\n  \"razorpay_payment_id\": \"pay_2QlLg5lIcTuTYr\",\n  \"razorpay_signature\": \"9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f114332d8401e0949a3d\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "verify"
+              ]
+            },
+            "description": "Verify payment signature and confirm payment after customer completes Razorpay flow"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/order/order_2QlLg5lIcTuTYr",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "order",
+                "order_2QlLg5lIcTuTYr"
+              ]
+            },
+            "description": "Get the current status of a payment order by order ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Coupons",
+      "item": [
+        {
+          "name": "Get All Coupons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/coupons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons"
+              ]
+            },
+            "description": "Fetch all active, non-expired coupons available for students"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Coupon by Code",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/coupons/FLAT100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "FLAT100"
+              ]
+            },
+            "description": "Get detailed information about a specific coupon by its code"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Coupon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"couponCode\": \"NEWYEAR100\",\n  \"type\": \"flat\",\n  \"value\": 100,\n  \"description\": \"New Year Special - ₹100 off\",\n  \"minAmount\": 500,\n  \"maxDiscount\": null,\n  \"maxUses\": 500,\n  \"expiresAt\": \"2026-12-31T23:59:59.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/coupons/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "create"
+              ]
+            },
+            "description": "Create a new coupon code. Type can be 'flat' (₹ amount) or 'percentage' (% discount)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Coupon",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": 150,\n  \"maxUses\": 1000,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/coupons/update/NEWYEAR100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "update",
+                "NEWYEAR100"
+              ]
+            },
+            "description": "Update fields of an existing coupon (value, maxUses, expiresAt, isActive, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Coupon",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/coupons/delete/NEWYEAR100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "delete",
+                "NEWYEAR100"
+              ]
+            },
+            "description": "Delete a coupon code permanently from the system"
+          },
+          "response": []
+        },
+        {
+          "name": "Validate Coupon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"couponCode\": \"FLAT100\",\n  \"amount\": 1500\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/coupons/validate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "coupons",
+                "validate"
+              ]
+            },
+            "description": "Validate a coupon code for a given amount and get the discount calculation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Razorpay Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Razorpay-Signature",
+                "value": "signature_from_razorpay"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"payment.authorized\",\n  \"payload\": {\n    \"payment\": {\n      \"id\": \"pay_xxxxx\",\n      \"order_id\": \"order_xxxxx\",\n      \"amount\": 50000,\n      \"email\": \"student@example.com\",\n      \"status\": \"captured\",\n      \"method\": \"card\",\n      \"created_at\": 1712217000,\n      \"notes\": {\n        \"fullName\": \"Student Name\",\n        \"phoneNumber\": \"+91-1234567890\",\n        \"courseId\": \"course-id\",\n        \"course\": \"Web Development\"\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/razorpay/webhook",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "razorpay",
+                "webhook"
+              ]
+            },
+            "description": "Server-to-server webhook from Razorpay. Automatic enrollment safety net if frontend fails. Not meant for manual testing - Razorpay sends these automatically. For setup, see RAZORPAY_WEBHOOK_GUIDE.md"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Support",
+      "item": [
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"filename\": \"receipt.pdf\",\n  \"contentType\": \"application/pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/support/upload-document",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "support",
+                "upload-document"
+              ]
+            },
+            "description": "Upload support documents to S3. File must be base64 encoded. Max 10MB. Allowed types: PDF, DOC, DOCX, XLS, XLSX, images, TXT, ZIP"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Support Query",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"category\": \"technical\",\n  \"description\": \"I am facing an issue with course access. The course materials are not loading properly.\",\n  \"documents\": [\n    \"https://s3.ap-south-1.amazonaws.com/codexai-support-documents-dev/john@example.com/1712300000_screenshot.png\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/support/submit-query",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "support",
+                "submit-query"
+              ]
+            },
+            "description": "Submit a support query/ticket. Categories: technical, billing, account, course, general. Documents are optional S3 URLs."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -716,6 +1067,30 @@
       "value": "550e8400-e29b-41d4-a716-446655440002",
       "type": "string",
       "description": "Replace with an actual brochure ID from your database"
+    },
+    {
+      "key": "orderId",
+      "value": "order_2QlLg5lIcTuTYr",
+      "type": "string",
+      "description": "Razorpay order ID from create-order response"
+    },
+    {
+      "key": "paymentId",
+      "value": "pay_2QlLg5lIcTuTYr",
+      "type": "string",
+      "description": "Razorpay payment ID from payment completion"
+    },
+    {
+      "key": "couponCode",
+      "value": "FLAT100",
+      "type": "string",
+      "description": "Coupon code for testing (e.g., FLAT100, OFF20)"
+    },
+    {
+      "key": "razorpaySignature",
+      "value": "9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f114332d8401e0949a3d",
+      "type": "string",
+      "description": "Razorpay payment signature from webhook or client"
     }
   ]
 }

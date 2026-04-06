@@ -1,5 +1,4 @@
 $kind: http-request
-name: Sign Up
 description: Register a new user with email, password, fullName, and
   phoneNumber. Password must be at least 8 characters with uppercase, lowercase,
   and numbers.
@@ -8,12 +7,12 @@ method: POST
 headers:
   Content-Type: application/json
 body:
-  type: json
+  type: text
   content: |-
     {
-      "email": "adarshchaudhary03@gmail.com",
+      "email": "john@example.com",
       "password": "SecurePass123",
       "fullName": "John Doe",
-      "phoneNumber": "+919876543210"
+      "phoneNumber": "+91-9876543210"
     }
 order: 1000

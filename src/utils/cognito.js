@@ -124,6 +124,56 @@ const getUserAttributes = async (accessToken) => {
   return cognito.getUserAttributes(params).promise();
 };
 
+/**
+ * Get user info (name and email) from access token
+ * Transforms CloudFormation attribute format to clean object
+ */
+const getUser = async (accessToken) => {
+  const result = await getUserAttributes(accessToken);
+  const attributes = {};
+
+  if (result.UserAttributes) {
+    result.UserAttributes.forEach((attr) => {
+      attributes[attr.Name] = attr.Value;
+    });
+  }
+
+  return {
+    email: attributes.email,
+    name: attributes.name,
+    fullName: attributes.name,
+    phoneNumber: attributes.phone_number,
+    sub: attributes.sub,
+  };
+};
+
+/**
+ * Get user attributes from Cognito by email (admin operation)
+ * Returns fullName, phoneNumber, and sub (userId)
+ */
+const getUserByEmail = async (email) => {
+  const params = {
+    UserPoolId: USER_POOL_ID,
+    Username: email,
+  };
+
+  const result = await cognito.adminGetUser(params).promise();
+  const attributes = {};
+
+  if (result.UserAttributes) {
+    result.UserAttributes.forEach((attr) => {
+      attributes[attr.Name] = attr.Value;
+    });
+  }
+
+  return {
+    sub: attributes.sub, // Cognito user ID
+    fullName: attributes.name || '',
+    phoneNumber: attributes.phone_number || '',
+    email: attributes.email,
+  };
+};
+
 module.exports = {
   cognito,
   USER_POOL_ID,
@@ -136,4 +186,6 @@ module.exports = {
   confirmForgotPassword,
   globalSignOut,
   getUserAttributes,
+  getUser,
+  getUserByEmail,
 };

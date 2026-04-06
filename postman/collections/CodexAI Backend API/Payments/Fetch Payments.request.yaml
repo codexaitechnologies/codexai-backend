@@ -1,0 +1,9 @@
+$kind: http-request
+name: Fetch Payments
+description: Verify payment signature and confirm payment after customer
+  completes Razorpay flow
+url: "{{base_url}}/payments"
+method: GET
+headers:
+  Content-Type: application/json
+order: 4000

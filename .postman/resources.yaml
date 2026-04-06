@@ -5,6 +5,8 @@ workspace:
 localResources:
   collections:
     - ../CodexAI_Backend_API.postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
 cloudResources:
   collections:
-    ../postman/collections/CodexAI Backend API: 66c95475-884d-4576-ac75-2e47bfbf4d2a
+    ../postman/collections/CodexAI Backend API: 469d0061-ceef-4434-b708-b3e2e6bb6301

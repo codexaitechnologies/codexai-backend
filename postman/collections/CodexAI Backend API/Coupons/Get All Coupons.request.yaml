@@ -1,0 +1,7 @@
+$kind: http-request
+description: Fetch all active, non-expired coupons available for students
+url: "{{base_url}}/coupons"
+method: GET
+headers:
+  Content-Type: application/json
+order: 1000
