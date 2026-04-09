@@ -1035,6 +1035,155 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Legals",
+      "item": [
+        {
+          "name": "Create Legal Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentName\": \"Terms & Conditions\",\n  \"documentLink\": \"https://example.com/terms-and-conditions.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/legals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "legals"
+              ]
+            },
+            "description": "Create a new legal document (Terms & Conditions, Privacy Policy, Refund Policy, Cookie Policy, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Legal Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/legals?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "legals"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items to return (default: 20, max: 100)"
+                },
+                {
+                  "key": "lastEvaluatedKey",
+                  "value": "",
+                  "description": "Base64-encoded key for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of all legal documents with pagination support"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Legal Document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/legals/{{legalId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "legals",
+                "{{legalId}}"
+              ]
+            },
+            "description": "Retrieves a specific legal document by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Legal Document",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentName\": \"Terms & Conditions Updated\",\n  \"documentLink\": \"https://example.com/terms-and-conditions-v2.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/legals/{{legalId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "legals",
+                "{{legalId}}"
+              ]
+            },
+            "description": "Updates one or more fields of an existing legal document. All fields are optional."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Legal Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/legals/{{legalId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "legals",
+                "{{legalId}}"
+              ]
+            },
+            "description": "Deletes a legal document permanently from the database"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -1091,6 +1240,12 @@
       "value": "9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f114332d8401e0949a3d",
       "type": "string",
       "description": "Razorpay payment signature from webhook or client"
+    },
+    {
+      "key": "legalId",
+      "value": "550e8400-e29b-41d4-a716-446655440099",
+      "type": "string",
+      "description": "Replace with an actual legal document ID from your database"
     }
   ]
 }

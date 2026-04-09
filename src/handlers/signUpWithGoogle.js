@@ -2,7 +2,6 @@ const { OAuth2Client } = require('google-auth-library');
 const AWS = require('aws-sdk');
 const { formatResponse, handleError } = require('../utils/dynamodb');
 const { dynamodb } = require('../utils/dynamodb');
-const { v4: uuidv4 } = require('uuid');
 
 const cognito = new AWS.CognitoIdentityServiceProvider({
   region: process.env.AWS_REGION || 'ap-south-1',
@@ -103,17 +102,6 @@ exports.handler = async (event) => {
                 Name: 'picture',
                 Value: picture || '',
               },
-              {
-                Name: 'identities',
-                Value: JSON.stringify([
-                  {
-                    provider: 'Google',
-                    providerName: 'Google',
-                    providerType: 'Google',
-                    userId: googleId,
-                  },
-                ]),
-              },
             ],
             MessageAction: 'SUPPRESS', // Don't send welcome email
           })
@@ -146,13 +134,17 @@ exports.handler = async (event) => {
       }
     }
 
-    // Get user details
+    // Get user details from Cognito
     const userDetails = await cognito
       .adminGetUser({
         UserPoolId: USER_POOL_ID,
         Username: email,
       })
       .promise();
+
+    // Extract Cognito user ID
+    const userId = userDetails.Username;
+    const cognitoUserId = userDetails.Username;
 
     // Authenticate user to get tokens
     const authResult = await cognito
@@ -189,8 +181,7 @@ exports.handler = async (event) => {
       // This simulates what would happen after social login
     }
 
-    // Create or update user record in DynamoDB
-    const userId = uuidv4();
+    // Create or update user record in DynamoDB (using Cognito userId)
     try {
       await dynamodb
         .put({

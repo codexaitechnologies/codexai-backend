@@ -20,6 +20,7 @@ provider:
     PAYMENTS_TABLE: payments-${sls:stage}
     COUPONS_TABLE: coupons-${sls:stage}
     SUPPORT_TICKETS_TABLE: support-tickets-${sls:stage}
+    LEGALS_TABLE: legals-${sls:stage}
     SUPPORT_DOCUMENTS_BUCKET: ${self:service}-support-documents-${sls:stage}
     SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'support@codexai.com'}
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
@@ -77,6 +78,7 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COUPONS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.LEGALS_TABLE}"
         - Effect: Allow
           Action:
             - cognito-idp:SignUp
@@ -380,6 +382,42 @@ functions:
           path: /support/submit-query
           method: post
 
+  # Legal Handlers
+  createLegal:
+    handler: src/handlers/createLegal.handler
+    events:
+      - httpApi:
+          path: /admin/legals
+          method: post
+
+  getLegal:
+    handler: src/handlers/getLegal.handler
+    events:
+      - httpApi:
+          path: /admin/legals/{legalId}
+          method: get
+
+  updateLegal:
+    handler: src/handlers/updateLegal.handler
+    events:
+      - httpApi:
+          path: /admin/legals/{legalId}
+          method: put
+
+  deleteLegal:
+    handler: src/handlers/deleteLegal.handler
+    events:
+      - httpApi:
+          path: /admin/legals/{legalId}
+          method: delete
+
+  listLegals:
+    handler: src/handlers/listLegals.handler
+    events:
+      - httpApi:
+          path: /admin/legals
+          method: get
+
 resources:
   Resources:
     UsersTable:
@@ -494,6 +532,18 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+
+    LegalsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.LEGALS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
 
     CognitoUserPool:
       Type: AWS::Cognito::UserPool

@@ -1,0 +1,306 @@
+{
+  "name": "AI News Daily Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000001",
+      "name": "Daily 8AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=artificial+intelligence&hl=en-IN&gl=IN&ceid=IN:en"
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000002",
+      "name": "Google News RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $input.item.json;\n\nconst rawTitle = data.title || '';\nconst titleClean = rawTitle.replace(/ - [^-]+$/, '').trim();\n\nlet source = '';\nconst content = data.content || '';\nconst fontMatch = content.match(/]*>([^<]+)<\\/font>/);\nif (fontMatch) source = fontMatch[1].trim();\nif (!source) {\n  const srcMatch = rawTitle.match(/ - ([^-]+)$/);\n  if (srcMatch) source = srcMatch[1].trim();\n}\n\nconst pubDate = data.isoDate\n  || (data.pubDate ? new Date(data.pubDate).toISOString() : new Date().toISOString());\n\nreturn {\n  Title:          titleClean || rawTitle,\n  Description:    '',\n  Image_URL:      '',\n  Source:         source,\n  Article_URL:    data.link || '',\n  Published_Date: pubDate,\n  Fetched_Date:   new Date().toISOString(),\n  Category:       'Artificial Intelligence'\n};"
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000003",
+      "name": "Extract and Clean",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.Article_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "timeout": 30000,
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000004",
+      "name": "Fetch Article Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "sourceData": "json",
+        "dataPropertyName": "data",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "og_image",
+              "cssSelector": "meta[property='og:image']",
+              "returnValue": "attribute",
+              "attribute": "content"
+            },
+            {
+              "key": "og_description",
+              "cssSelector": "meta[property='og:description']",
+              "returnValue": "attribute",
+              "attribute": "content"
+            },
+            {
+              "key": "twitter_image",
+              "cssSelector": "meta[name='twitter:image']",
+              "returnValue": "attribute",
+              "attribute": "content"
+            },
+            {
+              "key": "meta_description",
+              "cssSelector": "meta[name='description']",
+              "returnValue": "attribute",
+              "attribute": "content"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000005",
+      "name": "HTML Extract",
+      "type": "n8n-nodes-base.htmlExtract",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const s = $input.item.json;\n\nconst imageUrl = s.og_image || s.twitter_image || '';\nconst description = (s.og_description || s.meta_description || '').substring(0, 500);\n\nreturn {\n  Title:          s.Title          || '',\n  Description:    description,\n  Image_URL:      imageUrl,\n  Source:         s.Source         || '',\n  Article_URL:    s.Article_URL    || '',\n  Published_Date: s.Published_Date || new Date().toISOString(),\n  Fetched_Date:   s.Fetched_Date   || new Date().toISOString(),\n  Category:       s.Category       || 'Artificial Intelligence'\n};"
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000006",
+      "name": "Merge and Finalise",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title":          "={{ $json.Title }}",
+            "Description":    "={{ $json.Description }}",
+            "Image_URL":      "={{ $json.Image_URL }}",
+            "Source":         "={{ $json.Source }}",
+            "Article_URL":    "={{ $json.Article_URL }}",
+            "Published_Date": "={{ $json.Published_Date }}",
+            "Fetched_Date":   "={{ $json.Fetched_Date }}",
+            "Category":       "={{ $json.Category }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000007",
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [1560, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GSHEETS_CRED_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst today = new Date().toLocaleDateString('en-IN', {\n  weekday: 'long',\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\nconst cards = items.slice(0, 15).map(item => {\n  const d = item.json;\n  const imgTag = d.Image_URL\n    ? ``\n    : `\n`;\n  const dateStr = d.Published_Date\n    ? new Date(d.Published_Date).toLocaleDateString('en-IN', {\n        day: 'numeric', month: 'short', year: 'numeric'\n      })\n    : '';\n  const desc = d.Description ? d.Description.substring(0, 200) + '...' : '';\n  return `\n\n  \n  \n  \n  \n\n${imgTag}\n\n    ${d.Source || 'Google News'}\n    ${dateStr}\n  \n\n    \n${d.Title}\n\n  \n${desc}\n`;\n}).join('');\n\nconst html = `\n\n\n\n\n  \n\n\n    \n      \n      \n      \n      \n    \n\n        \nAI News Digest\n\n        \n${today}\n\n        \n${items.length} stories collected automatically\n\n      \n\n${cards}\nPowered by n8n automation  ·  AI News Bot\n\n  \n\n\n`;\n\nreturn [{\n  json: {\n    html:    html,\n    subject: `AI News Digest — ${today} (${items.length} stories)`,\n    count:   items.length\n  }\n}];"
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000008",
+      "name": "Build Email HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "your@email.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1001-4abc-8def-000000000009",
+      "name": "Send Email Digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [2000, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 8AM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google News RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google News RSS": {
+      "main": [
+        [
+          {
+            "node": "Extract and Clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract and Clean": {
+      "main": [
+        [
+          {
+            "node": "Fetch Article Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Article Page": {
+      "main": [
+        [
+          {
+            "node": "HTML Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Extract": {
+      "main": [
+        [
+          {
+            "node": "Merge and Finalise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge and Finalise": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Build Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Email Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "AI News" },
+    { "name": "Daily Automation" }
+  ]
+}
