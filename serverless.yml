@@ -1,7 +1,9 @@
 # "org" ensures this Service is used with the correct Serverless Framework Access Key.
-org: thevisionariesclub
+# Commented out for CI/CD - we authenticate using AWS credentials
+# org: thevisionariesclub
 # "app" enables Serverless Framework Dashboard features and sharing them with other Services.
-app: codexai
+# Commented out for CI/CD - we authenticate using AWS credentials
+# app: codexai
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: codexai-backend
 

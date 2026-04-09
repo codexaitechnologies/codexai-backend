@@ -82,7 +82,23 @@ Your `serverless.yml` is already configured with:
 - **Region**: `ap-south-1`
 - **Runtime**: `Node.js 20.x`
 
-## Testing Locally Before Push
+## Important Configuration Changes
+
+### Serverless Framework Organization Disabled for CI/CD
+
+The `serverless.yml` has `org` and `app` commented out:
+
+```yaml
+# Commented out for CI/CD - we authenticate using AWS credentials
+# org: thevisionariesclub
+# app: codexai
+```
+
+**Why?** In CI/CD environments, we authenticate using AWS credentials only. The org/app settings require Serverless Dashboard authentication which adds unnecessary complexity.
+
+**Local Development**: If you want to use Serverless Dashboard locally, uncomment these lines and follow Serverless Dashboard setup.
+
+**CI/CD (GitHub Actions)**: Stays commented out - we use AWS IAM credentials which is simpler and more secure for automated deployments.
 
 Before pushing code, test deployment locally:
 

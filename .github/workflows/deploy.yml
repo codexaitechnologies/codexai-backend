@@ -34,7 +34,12 @@ jobs:
       - name: Install Serverless Framework globally
         run: npm install -g serverless
 
-      - name: Create .env file for deployment
+      - name: Configure Serverless for AWS-only deployment
+        run: |
+          echo "Configuring Serverless CLI to use AWS credentials (org/app disabled)"
+          # Create a minimal .serverlessrc to disable Serverless Dashboard
+          mkdir -p ~/.serverless
+          echo "provider: aws" > ~/.serverless/config.yml
         run: |
           cat > .env << 'EOF'
           SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL || 'support@codexai.com' }}
