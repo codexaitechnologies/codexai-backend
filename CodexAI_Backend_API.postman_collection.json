@@ -1184,6 +1184,225 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "List News",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/news?limit=20&offset=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items to return (default: 20, max: 100)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Pagination offset (default: 0)"
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "Filter by category",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status (draft, published, archived)",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search query for title/content",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all news posts with optional filtering by category, status, and search"
+          },
+          "response": []
+        },
+        {
+          "name": "Get News by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/news/{{newsPostId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "{{newsPostId}}"
+              ]
+            },
+            "description": "Retrieves a specific news post by its ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create News",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Latest AI Trends in 2025\",\n  \"content\": \"Comprehensive overview of artificial intelligence trends shaping the tech industry...\",\n  \"category\": \"Artificial Intelligence\",\n  \"description\": \"Discover the latest AI trends and their impact on the industry\",\n  \"imageUrl\": \"https://example.com/images/ai-trends.jpg\",\n  \"status\": \"draft\",\n  \"author\": \"Admin\",\n  \"tags\": [\"AI\", \"Machine Learning\", \"Technology\", \"2025\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news"
+              ]
+            },
+            "description": "Creates a new news post (admin only). Status can be 'draft', 'published', or 'archived'. Default is 'draft'."
+          },
+          "response": []
+        },
+        {
+          "name": "Update News",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Latest AI Trends in 2025 - Updated\",\n  \"content\": \"Updated comprehensive overview of artificial intelligence trends...\",\n  \"category\": \"Artificial Intelligence\",\n  \"description\": \"Discover the latest AI trends and their impact on the industry\",\n  \"imageUrl\": \"https://example.com/images/ai-trends-updated.jpg\",\n  \"tags\": [\"AI\", \"Machine Learning\", \"Technology\", \"2025\", \"Updates\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news/{{newsPostId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "{{newsPostId}}"
+              ]
+            },
+            "description": "Updates one or more fields of an existing news post (admin only). All fields are optional."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete News",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/news/{{newsPostId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "{{newsPostId}}"
+              ]
+            },
+            "description": "Deletes a news post permanently from the database (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Publish News",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news/{{newsPostId}}/publish",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "{{newsPostId}}",
+                "publish"
+              ]
+            },
+            "description": "Publish a news post (change status from draft to published) and set publishedAt timestamp (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Archive News",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/news/{{newsPostId}}/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                "{{newsPostId}}",
+                "archive"
+              ]
+            },
+            "description": "Archive a news post (change status to archived) to remove from active listings (admin only)"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -1246,6 +1465,12 @@
       "value": "550e8400-e29b-41d4-a716-446655440099",
       "type": "string",
       "description": "Replace with an actual legal document ID from your database"
+    },
+    {
+      "key": "newsPostId",
+      "value": "550e8400-e29b-41d4-a716-446655440100",
+      "type": "string",
+      "description": "Replace with an actual news post ID from your database"
     }
   ]
 }

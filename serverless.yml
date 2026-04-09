@@ -23,6 +23,7 @@ provider:
     COUPONS_TABLE: coupons-${sls:stage}
     SUPPORT_TICKETS_TABLE: support-tickets-${sls:stage}
     LEGALS_TABLE: legals-${sls:stage}
+    NEWS_TABLE: news-${sls:stage}
     SUPPORT_DOCUMENTS_BUCKET: ${self:service}-support-documents-${sls:stage}
     SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'support@codexai.com'}
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
@@ -81,6 +82,8 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}/index/*"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.LEGALS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.NEWS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.NEWS_TABLE}/index/*"
         - Effect: Allow
           Action:
             - cognito-idp:SignUp
@@ -420,6 +423,56 @@ functions:
           path: /admin/legals
           method: get
 
+  # News Handlers
+  listNews:
+    handler: src/handlers/listNews.handler
+    events:
+      - httpApi:
+          path: /news
+          method: get
+
+  getNewsById:
+    handler: src/handlers/getNewsById.handler
+    events:
+      - httpApi:
+          path: /news/{postId}
+          method: get
+
+  createNews:
+    handler: src/handlers/createNews.handler
+    events:
+      - httpApi:
+          path: /news
+          method: post
+
+  updateNews:
+    handler: src/handlers/updateNews.handler
+    events:
+      - httpApi:
+          path: /news/{postId}
+          method: put
+
+  deleteNews:
+    handler: src/handlers/deleteNews.handler
+    events:
+      - httpApi:
+          path: /news/{postId}
+          method: delete
+
+  publishNews:
+    handler: src/handlers/publishNews.handler
+    events:
+      - httpApi:
+          path: /news/{postId}/publish
+          method: put
+
+  archiveNews:
+    handler: src/handlers/archiveNews.handler
+    events:
+      - httpApi:
+          path: /news/{postId}/archive
+          method: put
+
 resources:
   Resources:
     UsersTable:
@@ -675,6 +728,51 @@ resources:
               - AttributeName: status
                 KeyType: HASH
               - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    NewsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.NEWS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: postId
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+          - AttributeName: category
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+          - AttributeName: publishedAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: postId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: status-createdAt-index
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: category-createdAt-index
+            KeySchema:
+              - AttributeName: category
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: status-publishedAt-index
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: publishedAt
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
