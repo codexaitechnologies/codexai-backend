@@ -40,6 +40,8 @@ jobs:
           # Create a minimal .serverlessrc to disable Serverless Dashboard
           mkdir -p ~/.serverless
           echo "provider: aws" > ~/.serverless/config.yml
+
+      - name: Create .env file for deployment
         run: |
           cat > .env << 'EOF'
           SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL || 'support@codexai.com' }}
