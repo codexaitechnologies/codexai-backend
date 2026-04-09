@@ -31,8 +31,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Serverless Framework
+      - name: Install Serverless Framework globally
         run: npm install -g serverless
+
+      - name: Create .env file for deployment
+        run: |
+          cat > .env << 'EOF'
+          SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL || 'support@codexai.com' }}
+          GMAIL_USER=${{ secrets.GMAIL_USER || 'codexaitechnologies@gmail.com' }}
+          GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
+          COGNITO_USER_POOL_ID=${{ secrets.COGNITO_USER_POOL_ID }}
+          COGNITO_CLIENT_ID=${{ secrets.COGNITO_CLIENT_ID }}
+          EOF
+          echo "✅ .env file created"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -41,22 +56,32 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Verify AWS credentials
+        run: |
+          aws sts get-caller-identity
+          echo "✅ AWS credentials verified"
+
       - name: Deploy to Serverless (Production)
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         env:
-          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
         run: |
           echo "🚀 Deploying to Serverless Framework..."
-          serverless deploy --stage production
+          serverless deploy --stage production --verbose
         
-      - name: Verify Deployment
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      - name: Deployment Successful
+        if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
           echo "✅ Deployment completed successfully!"
-          echo "Check your AWS Lambda functions and API Gateway endpoints in the AWS Console."
+          echo "API Endpoints:"
+          serverless info --stage production
 
       - name: Deployment Failed
-        if: failure()
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
-          echo "❌ Deployment failed! Please check the logs above."
+          echo "❌ Deployment failed!"
+          echo "Check the logs above for details."
           exit 1
+
