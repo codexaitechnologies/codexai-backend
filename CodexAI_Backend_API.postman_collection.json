@@ -686,6 +686,142 @@
       ]
     },
     {
+      "name": "Enquiries",
+      "item": [
+        {
+          "name": "Submit Brochure Enquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"course\": \"GenAI Engineering Summer Internship Program 2026\",\n  \"courseId\": \"550e8400-e29b-41d4-a716-446655440001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/enquiries/submit-brochure",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "enquiries",
+                "submit-brochure"
+              ]
+            },
+            "description": "Submit a new brochure enquiry. Required fields: fullName, email, phoneNumber, course, courseId. Auto-sends confirmation email to customer and notification to admin."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Brochure Enquiry",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/enquiries/brochure/{{enquiryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "enquiries",
+                "brochure",
+                "{{enquiryId}}"
+              ]
+            },
+            "description": "Retrieves a specific brochure enquiry by its ID (ENQ-timestamp-uuid format)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Brochure Enquiries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/enquiries/brochure?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "enquiries",
+                "brochure"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items to return (default: 20, max: 100)"
+                },
+                {
+                  "key": "lastKey",
+                  "value": "",
+                  "description": "Base64-encoded pagination token for next page",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status (pending, brochure-sent, contacted)",
+                  "disabled": true
+                },
+                {
+                  "key": "courseId",
+                  "value": "",
+                  "description": "Filter by courseId",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of all brochure enquiries with optional filtering by status and courseId"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Brochure Enquiry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"brochure-sent\",\n  \"notes\": \"Brochure sent via email with course details\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/enquiries/brochure/{{enquiryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "enquiries",
+                "brochure",
+                "{{enquiryId}}"
+              ]
+            },
+            "description": "Update brochure enquiry status and/or admin notes. Valid statuses: pending, brochure-sent, contacted. Auto-sends brochure email to customer when status changes to brochure-sent."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Payments",
       "item": [
         {
@@ -1408,7 +1544,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "https://jbd1szydoc.execute-api.ap-south-1.amazonaws.com",
+      "value": "https://r5exi0cxad.execute-api.ap-south-1.amazonaws.com",
       "type": "string",
       "description": "CodexAI Backend API base URL"
     },
@@ -1435,6 +1571,12 @@
       "value": "550e8400-e29b-41d4-a716-446655440002",
       "type": "string",
       "description": "Replace with an actual brochure ID from your database"
+    },
+    {
+      "key": "enquiryId",
+      "value": "ENQ-1712345678000-a1b2c3d4",
+      "type": "string",
+      "description": "Replace with an actual brochure enquiry ID from submit-brochure response"
     },
     {
       "key": "orderId",

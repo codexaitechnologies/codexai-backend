@@ -11,21 +11,39 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-offline
 
+package:
+  individually: false
+  exclude:
+    - 'node_modules/@serverless/**'
+    - 'node_modules/serverless/**'
+    - 'node_modules/serverless-*/**'
+    - 'node_modules/java-invoke-local/**'
+    - 'node_modules/**/test/**'
+    - 'node_modules/**/tests/**'
+    - 'node_modules/**/examples/**'
+    - 'node_modules/**/docs/**'
+    - '.git/**'
+    - 'docs/**'
+    - '.env.example'
+    - 'README.md'
+
 provider:
   name: aws
   runtime: nodejs20.x
   region: ap-south-1
   environment:
-    USERS_TABLE: users-${sls:stage}
-    COURSES_TABLE: courses-${sls:stage}
-    BROCHURES_TABLE: brochures-${sls:stage}
-    PAYMENTS_TABLE: payments-${sls:stage}
-    COUPONS_TABLE: coupons-${sls:stage}
-    SUPPORT_TICKETS_TABLE: support-tickets-${sls:stage}
-    LEGALS_TABLE: legals-${sls:stage}
-    NEWS_TABLE: news-${sls:stage}
+    USERS_TABLE: codexai-users-${sls:stage}
+    COURSES_TABLE: codexai-courses-${sls:stage}
+    BROCHURES_TABLE: codexai-brochures-${sls:stage}
+    PAYMENTS_TABLE: codexai-payments-${sls:stage}
+    COUPONS_TABLE: codexai-coupons-${sls:stage}
+    SUPPORT_TICKETS_TABLE: codexai-support-tickets-${sls:stage}
+    BROCHURE_ENQUIRIES_TABLE: codexai-enquiries-${sls:stage}
+    LEGALS_TABLE: codexai-legals-${sls:stage}
+    NEWS_TABLE: codexai-news-${sls:stage}
     SUPPORT_DOCUMENTS_BUCKET: ${self:service}-support-documents-${sls:stage}
     SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'support@codexai.com'}
+    ADMIN_EMAIL: ${env:ADMIN_EMAIL, 'admin@codexai.com'}
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
     GMAIL_APP_PASSWORD: ${env:GMAIL_APP_PASSWORD, 'dpgd vzxq pipd fmtz'}
     DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
@@ -81,6 +99,8 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.COUPONS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.SUPPORT_TICKETS_TABLE}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURE_ENQUIRIES_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BROCHURE_ENQUIRIES_TABLE}/index/*"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.LEGALS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.NEWS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.NEWS_TABLE}/index/*"
@@ -387,6 +407,62 @@ functions:
           path: /support/submit-query
           method: post
 
+  # List Support Queries (optionally filter by email/status)
+  listSupportQueries:
+    handler: src/handlers/listSupportQueries.handler
+    events:
+      - httpApi:
+          path: /support/queries
+          method: get
+
+  # Get Support Queries by Email
+  getSupportQueriesByEmail:
+    handler: src/handlers/getSupportQueriesByEmail.handler
+    events:
+      - httpApi:
+          path: /support/queries/by-email
+          method: get
+
+  # Update Support Query
+  updateSupportQuery:
+    handler: src/handlers/updateSupportQuery.handler
+    events:
+      - httpApi:
+          path: /support/queries/{ticketId}
+          method: put
+
+  # Delete Support Query
+  deleteSupportQuery:
+    handler: src/handlers/deleteSupportQuery.handler
+    events:
+      - httpApi:
+          path: /support/queries/{ticketId}
+          method: delete
+
+  # Brochure Enquiry Submission Handler
+  submitBrochureEnquiry:
+    handler: src/handlers/submitBrochureEnquiry.handler
+    events:
+      - httpApi:
+          path: /enquiries/submit-brochure
+          method: post
+
+  # Get Brochure Enquiry Handler
+  getBrochureEnquiry:
+    handler: src/handlers/getBrochureEnquiry.handler
+    events:
+      - httpApi:
+          path: /enquiries/brochure/{enquiryId}
+          method: get
+
+  # List Brochure Enquiries Handler
+  listBrochureEnquiries:
+    handler: src/handlers/listBrochureEnquiries.handler
+    events:
+      - httpApi:
+          path: /enquiries/brochure
+          method: get
+
   # Legal Handlers
   createLegal:
     handler: src/handlers/createLegal.handler
@@ -599,6 +675,41 @@ resources:
         KeySchema:
           - AttributeName: id
             KeyType: HASH
+
+    BrochureEnquiriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.BROCHURE_ENQUIRIES_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: enquiryId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: courseId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: enquiryId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email-createdAt-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: courseId-createdAt-index
+            KeySchema:
+              - AttributeName: courseId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
     CognitoUserPool:
       Type: AWS::Cognito::UserPool

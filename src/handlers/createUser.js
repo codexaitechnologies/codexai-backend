@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { dynamodb, TABLE_NAME, formatResponse, handleError } = require('../utils/dynamodb');
-const { sendWelcomeEmail } = require('../utils/emailService');
+const { sendSimpleWelcomeEmail } = require('../utils/emailService');
 
 const BROCHURES_TABLE = process.env.BROCHURES_TABLE;
 
@@ -45,37 +45,14 @@ exports.handler = async (event) => {
 
     // If email exists, send welcome email and return 200
     if (existingUser) {
-      // Fetch brochure link from brochures table
-      let brochureLink = process.env.DEFAULT_BROCHURE_LINK || 'https://codexai.com/brochure.pdf';
-
-      try {
-        const brochureParams = {
-          TableName: BROCHURES_TABLE,
-          IndexName: 'courseId-index',
-          KeyConditionExpression: 'courseId = :courseId',
-          ExpressionAttributeValues: {
-            ':courseId': body.courseId,
-          },
-          Limit: 1,
-        };
-
-        const brochureResult = await dynamodb.query(brochureParams).promise();
-        if (brochureResult.Items && brochureResult.Items.length > 0) {
-          brochureLink = brochureResult.Items[0].brochureLink;
-        }
-      } catch (brochureError) {
-        console.warn('Warning: Could not fetch brochure link, using default:', brochureError.message);
-      }
-
       // Send email for existing user
       try {
-        await sendWelcomeEmail(
+        await sendSimpleWelcomeEmail(
           {
             email: existingUser.email,
             fullName: existingUser.fullName,
             course: existingUser.course,
-          },
-          brochureLink
+          }
         );
 
         return formatResponse(200, {
@@ -109,37 +86,14 @@ exports.handler = async (event) => {
 
     // If phone exists, send welcome email and return 200
     if (existingUser) {
-      // Fetch brochure link from brochures table
-      let brochureLink = process.env.DEFAULT_BROCHURE_LINK || 'https://codexai.com/brochure.pdf';
-
-      try {
-        const brochureParams = {
-          TableName: BROCHURES_TABLE,
-          IndexName: 'courseId-index',
-          KeyConditionExpression: 'courseId = :courseId',
-          ExpressionAttributeValues: {
-            ':courseId': body.courseId,
-          },
-          Limit: 1,
-        };
-
-        const brochureResult = await dynamodb.query(brochureParams).promise();
-        if (brochureResult.Items && brochureResult.Items.length > 0) {
-          brochureLink = brochureResult.Items[0].brochureLink;
-        }
-      } catch (brochureError) {
-        console.warn('Warning: Could not fetch brochure link, using default:', brochureError.message);
-      }
-
       // Send email for existing user
       try {
-        await sendWelcomeEmail(
+        await sendSimpleWelcomeEmail(
           {
             email: existingUser.email,
             fullName: existingUser.fullName,
             course: existingUser.course,
-          },
-          brochureLink
+          }
         );
 
         return formatResponse(200, {
@@ -156,29 +110,6 @@ exports.handler = async (event) => {
           emailError: emailError.message,
         });
       }
-    }
-
-    // Fetch brochure link from brochures table using GSI
-    let brochureLink = process.env.DEFAULT_BROCHURE_LINK || 'https://codexai.com/brochure.pdf';
-
-    try {
-      const brochureParams = {
-        TableName: BROCHURES_TABLE,
-        IndexName: 'courseId-index',
-        KeyConditionExpression: 'courseId = :courseId',
-        ExpressionAttributeValues: {
-          ':courseId': body.courseId,
-        },
-        Limit: 1,
-      };
-
-      const brochureResult = await dynamodb.query(brochureParams).promise();
-      if (brochureResult.Items && brochureResult.Items.length > 0) {
-        brochureLink = brochureResult.Items[0].brochureLink;
-      }
-    } catch (brochureError) {
-      console.warn('Warning: Could not fetch brochure link, using default:', brochureError.message);
-      // Continue with default brochure link
     }
 
     const userId = uuidv4();
@@ -206,13 +137,12 @@ exports.handler = async (event) => {
     // Send welcome email asynchronously (non-blocking)
     // If email fails, user is still created successfully
     try {
-      await sendWelcomeEmail(
+      await sendSimpleWelcomeEmail(
         {
           email: body.email,
           fullName: body.fullName,
           course: body.course,
-        },
-        brochureLink
+        }
       );
       
       return formatResponse(201, {

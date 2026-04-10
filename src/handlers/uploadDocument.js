@@ -25,8 +25,8 @@ exports.handler = async (event) => {
 
       bb.on('file', (fieldname, file, info) => {
         filename = info.filename;
-        contentType = info.encoding === '7bit' ? 'application/octet-stream' : info.mimeType;
-        
+        contentType = info.mimeType || 'application/octet-stream';
+
         const chunks = [];
         file.on('data', (data) => {
           chunks.push(data);

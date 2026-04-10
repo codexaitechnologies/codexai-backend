@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const AWS = require('aws-sdk');
 const { formatResponse, handleError } = require('../utils/dynamodb');
-const { sendEmail } = require('../utils/emailService');
+const { sendEmail, sendTicketConfirmationMail } = require('../utils/emailService');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const SUPPORT_TICKETS_TABLE = process.env.SUPPORT_TICKETS_TABLE || 'support-tickets-dev';
@@ -119,84 +119,30 @@ exports.handler = async (event) => {
         .promise();
 
       console.log(`Support ticket created: ${ticketId}`);
+
+          try {
+            await sendTicketConfirmationMail({
+              fullName: name,
+              email,
+              phoneNumber,
+              category,
+              description,
+              documents: documentsList,
+              enquiryId: ticketId,
+              createdAt,
+            });
+            console.log('✅ Ticket confirmation email sent to:', email);
+          } catch (ticketEmailError) {
+            console.error('⚠️ Failed to send ticket confirmation email:', ticketEmailError.message);
+            // Don't fail the request if email fails
+          }
+          
+
     } catch (dbError) {
       console.error('Database error:', dbError);
       return formatResponse(500, {
         error: 'Failed to create support ticket in database',
       });
-    }
-
-    // Send confirmation email to user
-    try {
-      const userEmailContent = `
-Hello ${name},
-
-Thank you for contacting CodexAI Support. Your support ticket has been received and assigned reference number: ${ticketId}
-
-**Ticket Details:**
-- Reference ID: ${ticketId}
-- Category: ${category}
-- Status: Open
-- Submitted: ${createdAt}
-
-**Your Query:**
-${description}
-
-We will review your query and respond within 24-48 hours. You can track your ticket status using the reference ID above.
-
-If you have any additional information to add, please reply to this email with your ticket reference ID.
-
-Best regards,
-CodexAI Support Team
-support@codexai.com
-      `;
-
-      await sendEmail({
-        to: email,
-        subject: `Support Ticket Created - ${ticketId}`,
-        html: userEmailContent,
-      });
-
-      console.log(`Confirmation email sent to ${email}`);
-    } catch (emailError) {
-      console.warn('Warning: Could not send confirmation email:', emailError.message);
-      // Continue - email failure should not block ticket creation
-    }
-
-    // Send notification email to support team
-    try {
-      const supportEmailContent = `
-New Support Ticket Submitted
-
-**Ticket ID:** ${ticketId}
-**Name:** ${name}
-**Email:** ${email}
-**Phone:** ${phoneNumber}
-**Category:** ${category}
-**Priority:** ${ticketRecord.priority}
-**Status:** ${ticketRecord.status}
-**Submitted:** ${createdAt}
-
-**Description:**
-${description}
-
-**Documents Attached:** ${documentsList.length > 0 ? 'Yes' : 'No'}
-${documentsList.length > 0 ? documentsList.map((doc) => `- ${doc}`).join('\n') : ''}
-
----
-Please log in to the support dashboard to view and respond to this ticket.
-      `;
-
-      await sendEmail({
-        to: SUPPORT_EMAIL,
-        subject: `[NEW] Support Ticket: ${ticketId} - ${category} (${ticketRecord.priority})`,
-        html: supportEmailContent,
-      });
-
-      console.log(`Support team notification sent to ${SUPPORT_EMAIL}`);
-    } catch (emailError) {
-      console.warn('Warning: Could not send support notification email:', emailError.message);
-      // Continue - email failure should not block ticket creation
     }
 
     return formatResponse(201, {

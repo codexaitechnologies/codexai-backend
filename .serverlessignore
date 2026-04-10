@@ -1,0 +1,45 @@
+# Dependencies - will be excluded via package config
+# node_modules/
+
+# Version Control
+.git/
+.gitignore
+.github/
+
+# Documentation
+README.md
+docs/
+*.md
+
+# Build artifacts
+dist/
+build/
+.serverless/
+*.zip
+
+# Testing
+test/
+.test/
+__tests__/
+
+# Environment files
+.env.example
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Postman & API docs (keep for reference, they're small)
+# postman/
+
+# Cache
+.cache/
+.eslintcache
+
+# Lock files
+package-lock.json
+yarn.lock
