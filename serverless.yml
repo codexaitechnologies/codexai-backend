@@ -10,22 +10,24 @@ service: codexai-backend
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
+  - serverless-prune-plugin
 
 package:
   individually: false
-  exclude:
-    - 'node_modules/@serverless/**'
-    - 'node_modules/serverless/**'
-    - 'node_modules/serverless-*/**'
-    - 'node_modules/java-invoke-local/**'
-    - 'node_modules/**/test/**'
-    - 'node_modules/**/tests/**'
-    - 'node_modules/**/examples/**'
-    - 'node_modules/**/docs/**'
-    - '.git/**'
-    - 'docs/**'
-    - '.env.example'
-    - 'README.md'
+  patterns:
+    - '!node_modules/**'
+    - '!layers/**'
+    - '!.git/**'
+    - '!docs/**'
+    - '!.env.example'
+    - '!README.md'
+    - 'src/**'
+    - 'handler.js'
+
+custom:
+  prune:
+    automatic: true
+    number: 3
 
 provider:
   name: aws
@@ -42,8 +44,8 @@ provider:
     LEGALS_TABLE: codexai-legals-${sls:stage}
     NEWS_TABLE: codexai-news-${sls:stage}
     SUPPORT_DOCUMENTS_BUCKET: ${self:service}-support-documents-${sls:stage}
-    SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'support@codexai.com'}
-    ADMIN_EMAIL: ${env:ADMIN_EMAIL, 'admin@codexai.com'}
+    SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'codexaitechnologies@gmail.com'}
+    ADMIN_EMAIL: ${env:ADMIN_EMAIL, 'codexaitechnologies@gmail.com'}
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
     GMAIL_APP_PASSWORD: ${env:GMAIL_APP_PASSWORD, 'dpgd vzxq pipd fmtz'}
     DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
@@ -135,107 +137,146 @@ provider:
           Resource:
             - "arn:aws:s3:::${self:service}-support-documents-${sls:stage}"
 
+layers:
+  dependencies:
+    path: layers
+    name: ${sls:stage}-codexai-dependencies
+    description: CodexAI production Node.js dependencies
+    compatibleRuntimes:
+      - nodejs20.x
+    retain: false
+
 functions:
   createUser:
-    handler: src/handlers/createUser.handler
+    handler: src/handlers/users/createUser.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /users
           method: post
 
   getUser:
-    handler: src/handlers/getUser.handler
+    handler: src/handlers/users/getUser.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /users/{userId}
           method: get
 
   updateUser:
-    handler: src/handlers/updateUser.handler
+    handler: src/handlers/users/updateUser.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /users/{userId}
           method: put
 
   deleteUser:
-    handler: src/handlers/deleteUser.handler
+    handler: src/handlers/users/deleteUser.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /users/{userId}
           method: delete
 
   listUsers:
-    handler: src/handlers/listUsers.handler
+    handler: src/handlers/users/listUsers.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /users
           method: get
 
   createCourse:
-    handler: src/handlers/createCourse.handler
+    handler: src/handlers/courses/createCourse.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /courses
           method: post
 
   getCourse:
-    handler: src/handlers/getCourse.handler
+    handler: src/handlers/courses/getCourse.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /courses/{courseId}
           method: get
 
   updateCourse:
-    handler: src/handlers/updateCourse.handler
+    handler: src/handlers/courses/updateCourse.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /courses/{courseId}
           method: put
 
   deleteCourse:
-    handler: src/handlers/deleteCourse.handler
+    handler: src/handlers/courses/deleteCourse.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /courses/{courseId}
           method: delete
 
   listCourses:
-    handler: src/handlers/listCourses.handler
+    handler: src/handlers/courses/listCourses.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /courses
           method: get
 
   createBrochure:
-    handler: src/handlers/createBrochure.handler
+    handler: src/handlers/brochures/createBrochure.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /brochures
           method: post
 
   getBrochure:
-    handler: src/handlers/getBrochure.handler
+    handler: src/handlers/brochures/getBrochure.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /brochures/{brochureId}
           method: get
 
   updateBrochure:
-    handler: src/handlers/updateBrochure.handler
+    handler: src/handlers/brochures/updateBrochure.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /brochures/{brochureId}
           method: put
 
   deleteBrochure:
-    handler: src/handlers/deleteBrochure.handler
+    handler: src/handlers/brochures/deleteBrochure.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /brochures/{brochureId}
           method: delete
 
   listBrochures:
-    handler: src/handlers/listBrochures.handler
+    handler: src/handlers/brochures/listBrochures.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /brochures
@@ -243,56 +284,72 @@ functions:
 
   # Authentication Handlers
   signUpWithEmailPassword:
-    handler: src/handlers/signUpWithEmailPassword.handler
+    handler: src/handlers/auth/signUpWithEmailPassword.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/signup
           method: post
 
   loginWithEmailPassword:
-    handler: src/handlers/loginWithEmailPassword.handler
+    handler: src/handlers/auth/loginWithEmailPassword.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/login
           method: post
 
   confirmEmailVerification:
-    handler: src/handlers/confirmEmailVerification.handler
+    handler: src/handlers/auth/confirmEmailVerification.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/confirm-email
           method: post
 
   resendEmailCode:
-    handler: src/handlers/resendEmailCode.handler
+    handler: src/handlers/auth/resendEmailCode.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/resend-code
           method: post
 
   forgetPassword:
-    handler: src/handlers/forgetPassword.handler
+    handler: src/handlers/auth/forgetPassword.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/forgot-password
           method: post
 
   resetPassword:
-    handler: src/handlers/resetPassword.handler
+    handler: src/handlers/auth/resetPassword.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/reset-password
           method: post
 
   logout:
-    handler: src/handlers/logout.handler
+    handler: src/handlers/auth/logout.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/logout
           method: post
 
   signUpWithGoogle:
-    handler: src/handlers/signUpWithGoogle.handler
+    handler: src/handlers/auth/signUpWithGoogle.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /auth/google-signup
@@ -300,49 +357,63 @@ functions:
 
   # Payment Handlers
   createOrder:
-    handler: src/handlers/createOrder.handler
+    handler: src/handlers/payments/createOrder.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /payments/create-order
           method: post
 
   verifyPayment:
-    handler: src/handlers/verifyPayment.handler
+    handler: src/handlers/payments/verifyPayment.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /payments/verify
           method: post
 
   getOrderStatus:
-    handler: src/handlers/getOrderStatus.handler
+    handler: src/handlers/payments/getOrderStatus.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /payments/order/{orderId}
           method: get
 
   getAllPayments:
-    handler: src/handlers/getAllPayments.handler
+    handler: src/handlers/payments/getAllPayments.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /payments
           method: get
 
   getPaymentById:
-    handler: src/handlers/getPaymentById.handler
+    handler: src/handlers/payments/getPaymentById.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /payments/{paymentId}
           method: get
 
   getPaymentsByUserId:
-    handler: src/handlers/getPaymentsByUserId.handler
+    handler: src/handlers/payments/getPaymentsByUserId.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /payments/user/{userId}
           method: get
 
   razorpayWebhook:
-    handler: src/handlers/razorpayWebhook.handler
+    handler: src/handlers/payments/razorpayWebhook.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /api/razorpay/webhook
@@ -350,42 +421,54 @@ functions:
 
   # Coupon Handlers
   getCoupons:
-    handler: src/handlers/getCoupons.handler
+    handler: src/handlers/coupons/getCoupons.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /coupons
           method: get
 
   validateCoupon:
-    handler: src/handlers/validateCoupon.handler
+    handler: src/handlers/coupons/validateCoupon.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /coupons/validate
           method: post
 
   getCouponById:
-    handler: src/handlers/getCouponById.handler
+    handler: src/handlers/coupons/getCouponById.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /coupons/{couponCode}
           method: get
 
   createCoupon:
-    handler: src/handlers/createCoupon.handler
+    handler: src/handlers/coupons/createCoupon.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /coupons/create
           method: post
 
   updateCoupon:
-    handler: src/handlers/updateCoupon.handler
+    handler: src/handlers/coupons/updateCoupon.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /coupons/update/{couponCode}
           method: put
 
   deleteCoupon:
-    handler: src/handlers/deleteCoupon.handler
+    handler: src/handlers/coupons/deleteCoupon.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /coupons/delete/{couponCode}
@@ -393,7 +476,9 @@ functions:
 
   # Support Document Upload Handler
   uploadDocument:
-    handler: src/handlers/uploadDocument.handler
+    handler: src/handlers/support/uploadDocument.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /support/upload-document
@@ -401,7 +486,9 @@ functions:
 
   # Support Query Submission Handler
   submitSupportQuery:
-    handler: src/handlers/submitSupportQuery.handler
+    handler: src/handlers/support/submitSupportQuery.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /support/submit-query
@@ -409,7 +496,9 @@ functions:
 
   # List Support Queries (optionally filter by email/status)
   listSupportQueries:
-    handler: src/handlers/listSupportQueries.handler
+    handler: src/handlers/support/listSupportQueries.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /support/queries
@@ -417,7 +506,9 @@ functions:
 
   # Get Support Queries by Email
   getSupportQueriesByEmail:
-    handler: src/handlers/getSupportQueriesByEmail.handler
+    handler: src/handlers/support/getSupportQueriesByEmail.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /support/queries/by-email
@@ -425,7 +516,9 @@ functions:
 
   # Update Support Query
   updateSupportQuery:
-    handler: src/handlers/updateSupportQuery.handler
+    handler: src/handlers/support/updateSupportQuery.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /support/queries/{ticketId}
@@ -433,7 +526,9 @@ functions:
 
   # Delete Support Query
   deleteSupportQuery:
-    handler: src/handlers/deleteSupportQuery.handler
+    handler: src/handlers/support/deleteSupportQuery.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /support/queries/{ticketId}
@@ -441,7 +536,9 @@ functions:
 
   # Brochure Enquiry Submission Handler
   submitBrochureEnquiry:
-    handler: src/handlers/submitBrochureEnquiry.handler
+    handler: src/handlers/enquiries/submitBrochureEnquiry.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /enquiries/submit-brochure
@@ -449,7 +546,9 @@ functions:
 
   # Get Brochure Enquiry Handler
   getBrochureEnquiry:
-    handler: src/handlers/getBrochureEnquiry.handler
+    handler: src/handlers/enquiries/getBrochureEnquiry.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /enquiries/brochure/{enquiryId}
@@ -457,7 +556,9 @@ functions:
 
   # List Brochure Enquiries Handler
   listBrochureEnquiries:
-    handler: src/handlers/listBrochureEnquiries.handler
+    handler: src/handlers/enquiries/listBrochureEnquiries.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /enquiries/brochure
@@ -465,35 +566,45 @@ functions:
 
   # Legal Handlers
   createLegal:
-    handler: src/handlers/createLegal.handler
+    handler: src/handlers/legals/createLegal.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /admin/legals
           method: post
 
   getLegal:
-    handler: src/handlers/getLegal.handler
+    handler: src/handlers/legals/getLegal.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /admin/legals/{legalId}
           method: get
 
   updateLegal:
-    handler: src/handlers/updateLegal.handler
+    handler: src/handlers/legals/updateLegal.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /admin/legals/{legalId}
           method: put
 
   deleteLegal:
-    handler: src/handlers/deleteLegal.handler
+    handler: src/handlers/legals/deleteLegal.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /admin/legals/{legalId}
           method: delete
 
   listLegals:
-    handler: src/handlers/listLegals.handler
+    handler: src/handlers/legals/listLegals.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /admin/legals
@@ -501,49 +612,63 @@ functions:
 
   # News Handlers
   listNews:
-    handler: src/handlers/listNews.handler
+    handler: src/handlers/news/listNews.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news
           method: get
 
   getNewsById:
-    handler: src/handlers/getNewsById.handler
+    handler: src/handlers/news/getNewsById.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news/{postId}
           method: get
 
   createNews:
-    handler: src/handlers/createNews.handler
+    handler: src/handlers/news/createNews.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news
           method: post
 
   updateNews:
-    handler: src/handlers/updateNews.handler
+    handler: src/handlers/news/updateNews.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news/{postId}
           method: put
 
   deleteNews:
-    handler: src/handlers/deleteNews.handler
+    handler: src/handlers/news/deleteNews.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news/{postId}
           method: delete
 
   publishNews:
-    handler: src/handlers/publishNews.handler
+    handler: src/handlers/news/publishNews.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news/{postId}/publish
           method: put
 
   archiveNews:
-    handler: src/handlers/archiveNews.handler
+    handler: src/handlers/news/archiveNews.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
     events:
       - httpApi:
           path: /news/{postId}/archive

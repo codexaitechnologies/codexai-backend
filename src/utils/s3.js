@@ -1,6 +1,13 @@
-const AWS = require('aws-sdk');
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+  GetObjectCommand,
+} = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
-const s3 = new AWS.S3();
+const s3Client = new S3Client({ region: process.env.AWS_REGION || 'ap-south-1' });
 
 const S3_BUCKET = process.env.SUPPORT_DOCUMENTS_BUCKET || 'codexai-support-documents';
 const PRESIGNED_URL_EXPIRY = 7 * 24 * 60 * 60; // 7 days in seconds
@@ -62,7 +69,7 @@ async function uploadFile(fileBuffer, filename, contentType, email) {
       },
     };
 
-    const uploadResult = await s3.upload(params).promise();
+    const uploadResult = await s3Client.send(new PutObjectCommand(params));
 
     console.log(`File uploaded successfully: ${fileKey}`);
 
@@ -90,13 +97,8 @@ async function generatePresignedUrl(fileKey, expirySeconds = PRESIGNED_URL_EXPIR
       throw new Error('File key is required');
     }
 
-    const params = {
-      Bucket: S3_BUCKET,
-      Key: fileKey,
-      Expires: expirySeconds,
-    };
-
-    const presignedUrl = await s3.getSignedUrlPromise('getObject', params);
+    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: fileKey });
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: expirySeconds });
 
     return {
       presignedUrl,
@@ -125,7 +127,7 @@ async function deleteFile(fileKey) {
       Key: fileKey,
     };
 
-    await s3.deleteObject(params).promise();
+    await s3Client.send(new DeleteObjectCommand(params));
     console.log(`File deleted successfully: ${fileKey}`);
   } catch (error) {
     console.error('Error deleting file from S3:', error);
@@ -149,7 +151,7 @@ async function listUserFiles(email) {
       Prefix: `support-documents/${email}/`,
     };
 
-    const result = await s3.listObjectsV2(params).promise();
+    const result = await s3Client.send(new ListObjectsV2Command(params));
 
     if (!result.Contents) {
       return [];

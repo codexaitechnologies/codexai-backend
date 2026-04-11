@@ -1,9 +1,41 @@
-const AWS = require('aws-sdk');
+const {
+  CognitoIdentityProviderClient,
+  SignUpCommand,
+  InitiateAuthCommand,
+  ConfirmSignUpCommand,
+  ResendConfirmationCodeCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
+  GlobalSignOutCommand,
+  GetUserCommand,
+  AdminGetUserCommand,
+  AdminCreateUserCommand,
+  AdminSetUserPasswordCommand,
+  AdminInitiateAuthCommand,
+  AdminUpdateUserAttributesCommand,
+  AdminUserGlobalSignOutCommand,
+} = require('@aws-sdk/client-cognito-identity-provider');
 const { formatResponse, handleError } = require('./dynamodb');
 
-const cognito = new AWS.CognitoIdentityServiceProvider({
-  region: process.env.AWS_REGION || 'ap-south-1',
-});
+const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || 'ap-south-1' });
+
+// v2-compatible wrapper: cognito.signUp(params).promise() still works
+const cognito = {
+  signUp:                    (p) => ({ promise: () => client.send(new SignUpCommand(p)) }),
+  initiateAuth:              (p) => ({ promise: () => client.send(new InitiateAuthCommand(p)) }),
+  confirmSignUp:             (p) => ({ promise: () => client.send(new ConfirmSignUpCommand(p)) }),
+  resendConfirmationCode:    (p) => ({ promise: () => client.send(new ResendConfirmationCodeCommand(p)) }),
+  forgotPassword:            (p) => ({ promise: () => client.send(new ForgotPasswordCommand(p)) }),
+  confirmForgotPassword:     (p) => ({ promise: () => client.send(new ConfirmForgotPasswordCommand(p)) }),
+  globalSignOut:             (p) => ({ promise: () => client.send(new GlobalSignOutCommand(p)) }),
+  getUserAttributes:         (p) => ({ promise: () => client.send(new GetUserCommand(p)) }),
+  adminGetUser:              (p) => ({ promise: () => client.send(new AdminGetUserCommand(p)) }),
+  adminCreateUser:           (p) => ({ promise: () => client.send(new AdminCreateUserCommand(p)) }),
+  adminSetUserPassword:      (p) => ({ promise: () => client.send(new AdminSetUserPasswordCommand(p)) }),
+  adminInitiateAuth:         (p) => ({ promise: () => client.send(new AdminInitiateAuthCommand(p)) }),
+  adminUpdateUserAttributes: (p) => ({ promise: () => client.send(new AdminUpdateUserAttributesCommand(p)) }),
+  adminUserGlobalSignOut:    (p) => ({ promise: () => client.send(new AdminUserGlobalSignOutCommand(p)) }),
+};
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const CLIENT_ID = process.env.COGNITO_CLIENT_ID;
