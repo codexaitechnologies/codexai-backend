@@ -904,6 +904,91 @@
             "description": "Get the current status of a payment order by order ID"
           },
           "response": []
+        },
+        {
+          "name": "Get All Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items to return (default: 20, max: 100)"
+                },
+                {
+                  "key": "lastEvaluatedKey",
+                  "value": "",
+                  "description": "Base64-encoded key for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of all payment records"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/{{paymentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "{{paymentId}}"
+              ]
+            },
+            "description": "Retrieve a specific payment record by its payment ID (e.g., pay_xxxxx)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payments by User ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/user/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "user",
+                "{{userId}}"
+              ]
+            },
+            "description": "Retrieve all payment records for a specific user by their Cognito sub (userId)"
+          },
+          "response": []
         }
       ]
     },
@@ -1167,6 +1252,135 @@
               ]
             },
             "description": "Submit a support query/ticket. Categories: technical, billing, account, course, general. Documents are optional S3 URLs."
+          },
+          "response": []
+        },
+        {
+          "name": "List Support Queries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/support/queries?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "support",
+                "queries"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of items to return (default: 20, max: 100)"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status (open, in-progress, resolved, closed)",
+                  "disabled": true
+                },
+                {
+                  "key": "lastEvaluatedKey",
+                  "value": "",
+                  "description": "Base64-encoded key for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of all support tickets. Optionally filter by status."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Support Queries by Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/support/queries/by-email?email=john@example.com",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "support",
+                "queries",
+                "by-email"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "john@example.com",
+                  "description": "Email address to filter support tickets by"
+                }
+              ]
+            },
+            "description": "Retrieve all support tickets submitted by a specific email address"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Support Query",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in-progress\",\n  \"comments\": [\"We are looking into this issue.\"],\n  \"responses\": [\n    {\n      \"message\": \"Thank you for reaching out. We are investigating your issue.\",\n      \"respondedBy\": \"Support Team\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/support/queries/{{ticketId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "support",
+                "queries",
+                "{{ticketId}}"
+              ]
+            },
+            "description": "Update a support ticket's status, add admin comments, or append responses. Valid statuses: open, in-progress, resolved, closed."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Support Query",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/support/queries/{{ticketId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "support",
+                "queries",
+                "{{ticketId}}"
+              ]
+            },
+            "description": "Permanently delete a support ticket by its ticket ID (e.g., TKT-timestamp-uuid)"
           },
           "response": []
         }
@@ -1613,6 +1827,12 @@
       "value": "550e8400-e29b-41d4-a716-446655440100",
       "type": "string",
       "description": "Replace with an actual news post ID from your database"
+    },
+    {
+      "key": "ticketId",
+      "value": "TKT-1712345678000-a1b2c3d4",
+      "type": "string",
+      "description": "Replace with an actual support ticket ID from submit-query response (TKT-timestamp-uuid format)"
     }
   ]
 }
