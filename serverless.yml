@@ -43,11 +43,14 @@ provider:
     BROCHURE_ENQUIRIES_TABLE: codexai-enquiries-${sls:stage}
     LEGALS_TABLE: codexai-legals-${sls:stage}
     NEWS_TABLE: codexai-news-${sls:stage}
+    EMI_ENROLLMENTS_TABLE: codexai-emi-enrollments-${sls:stage}
+    BATCHES_TABLE: codexai-batches-${sls:stage}
     SUPPORT_DOCUMENTS_BUCKET: ${self:service}-support-documents-${sls:stage}
     SUPPORT_EMAIL: ${env:SUPPORT_EMAIL, 'codexaitechnologies@gmail.com'}
     ADMIN_EMAIL: ${env:ADMIN_EMAIL, 'codexaitechnologies@gmail.com'}
     GMAIL_USER: ${env:GMAIL_USER, 'codexaitechnologies@gmail.com'}
     GMAIL_APP_PASSWORD: ${env:GMAIL_APP_PASSWORD, 'dpgd vzxq pipd fmtz'}
+    RAZORPAY_WEBHOOK_SECRET: ${env:RAZORPAY_WEBHOOK_SECRET, ''}
     DEFAULT_BROCHURE_LINK: https://codexai.com/brochure.pdf
     COGNITO_USER_POOL_ID:
       Ref: CognitoUserPool
@@ -106,6 +109,10 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.LEGALS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.NEWS_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.NEWS_TABLE}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.EMI_ENROLLMENTS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.EMI_ENROLLMENTS_TABLE}/index/*"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BATCHES_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.BATCHES_TABLE}/index/*"
         - Effect: Allow
           Action:
             - cognito-idp:SignUp
@@ -417,6 +424,52 @@ functions:
     events:
       - httpApi:
           path: /api/razorpay/webhook
+          method: post
+
+  createPaymentLink:
+    handler: src/handlers/payments/createPaymentLink.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
+    events:
+      - httpApi:
+          path: /payments/create-link
+          method: post
+
+  # EMI Enrollment Handlers
+  createEmiEnrollment:
+    handler: src/handlers/payments/createEmiEnrollment.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
+    events:
+      - httpApi:
+          path: /payments/emi/enroll
+          method: post
+
+  generateInstallmentLink:
+    handler: src/handlers/payments/generateInstallmentLink.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
+    events:
+      - httpApi:
+          path: /payments/emi/generate-link
+          method: post
+
+  getEmiEnrollments:
+    handler: src/handlers/payments/getEmiEnrollments.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
+    events:
+      - httpApi:
+          path: /payments/emi/enrollments
+          method: get
+
+  syncEmiInstallments:
+    handler: src/handlers/payments/syncEmiInstallments.handler
+    layers:
+      - !Ref DependenciesLambdaLayer
+    events:
+      - httpApi:
+          path: /payments/emi/sync
           method: post
 
   # Coupon Handlers
@@ -767,7 +820,7 @@ resources:
     CouponsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.COUPONS_TABLE}
+        TableName: ${self:provider.environment.COUPONS_TABLE}        
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: couponCode
@@ -1009,6 +1062,86 @@ resources:
               - AttributeName: status
                 KeyType: HASH
               - AttributeName: publishedAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    EmiEnrollmentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.EMI_ENROLLMENTS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: enrollmentId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: courseId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: enrollmentId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email-createdAt-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: courseId-createdAt-index
+            KeySchema:
+              - AttributeName: courseId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    BatchesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.BATCHES_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: batchId
+            AttributeType: S
+          - AttributeName: courseId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: paymentStatus
+            AttributeType: S
+          - AttributeName: enrollmentDate
+            AttributeType: S
+        KeySchema:
+          - AttributeName: batchId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: courseId-enrollmentDate-index
+            KeySchema:
+              - AttributeName: courseId
+                KeyType: HASH
+              - AttributeName: enrollmentDate
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: userId-enrollmentDate-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: enrollmentDate
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: paymentStatus-enrollmentDate-index
+            KeySchema:
+              - AttributeName: paymentStatus
+                KeyType: HASH
+              - AttributeName: enrollmentDate
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL

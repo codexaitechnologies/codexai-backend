@@ -993,6 +993,64 @@
       ]
     },
     {
+      "name": "EMI Management",
+      "item": [
+        {
+          "name": "Enroll Student in EMI",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/payments/emi/enroll",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "emi", "enroll"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentName\": \"Test Student\",\n  \"email\": \"student@example.com\",\n  \"phoneNumber\": \"+91-9876543210\",\n  \"courseId\": \"{{courseId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Admin enrolls a student in a course with No-Cost EMI. Creates N installment records based on course emiInstallments and auto-generates a Razorpay Payment Link for installment 1."
+          }
+        },
+        {
+          "name": "Generate Installment Payment Link",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/payments/emi/generate-link",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "emi", "generate-link"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enrollmentId\": \"{{enrollmentId}}\",\n  \"installmentNumber\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Generate a Razorpay Payment Link for a specific pending installment. The previous installment must be paid before generating the next one."
+          }
+        },
+        {
+          "name": "Get EMI Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/emi/enrollments?email=student@example.com",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "emi", "enrollments"],
+              "query": [
+                { "key": "email", "value": "student@example.com", "description": "Filter by student email (optional)" },
+                { "key": "status", "value": "active", "description": "Filter by enrollmentStatus: active | completed (optional)", "disabled": true }
+              ]
+            },
+            "description": "Fetch all EMI enrollments. Returns annotated records with pendingAmount and nextInstallment summary."
+          }
+        }
+      ]
+    },
+    {
       "name": "Coupons",
       "item": [
         {

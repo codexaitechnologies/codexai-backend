@@ -6,6 +6,8 @@ const { sendSimpleWelcomeEmail, sendPaymentConfirmationEmail } = require('../../
 const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || `payments-${process.env.STAGE || 'dev'}`;
 const USERS_TABLE = process.env.USERS_TABLE || `users-${process.env.STAGE || 'dev'}`;
 const BROCHURES_TABLE = process.env.BROCHURES_TABLE || `brochures-${process.env.STAGE || 'dev'}`;
+const EMI_TABLE = process.env.EMI_ENROLLMENTS_TABLE || 'codexai-emi-enrollments-dev';
+const BATCHES_TABLE = process.env.BATCHES_TABLE || 'codexai-batches-dev';
 
 /**
  * Razorpay Webhook Handler
@@ -56,6 +58,9 @@ exports.handler = async (event) => {
       case 'order.paid':
         return await handleOrderPaid(body.payload.order);
 
+      case 'payment_link.paid':
+        return await handlePaymentLinkPaid(body.payload);
+
       default:
         // Acknowledge other webhook events but don't process
         console.log('Unhandled webhook event:', body.event);
@@ -79,8 +84,11 @@ exports.handler = async (event) => {
  * Razorpay signature = HMAC-SHA256(body, key_secret)
  */
 function verifyWebhookSignature(body, signature) {
+  // Razorpay signs webhooks with a SEPARATE Webhook Secret (set in Razorpay
+  // Dashboard → Settings → Webhooks), NOT the API key_secret.
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
   const expectedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .createHmac('sha256', webhookSecret)
     .update(body)
     .digest('hex');
 
@@ -443,6 +451,31 @@ async function enrollUserInCourse({ email, fullName, phoneNumber, courseId, cour
       // Continue anyway - enrollment is still successful
     }
 
+    // Write to BATCHES master enrollment table
+    try {
+      await dynamodb.put({
+        TableName: BATCHES_TABLE,
+        Item: {
+          batchId: paymentId,
+          userId,
+          paymentId,
+          amountPaid: amount || 0,
+          pendingAmount: 0,
+          courseId,
+          courseName,
+          enrollmentDate: paidAt || timestamp,
+          paymentStatus: 'paid',
+          paymentType: 'full',
+          studentName: fullName,
+          email,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      }).promise();
+    } catch (batchErr) {
+      console.warn('Failed to write BATCHES record (webhook):', batchErr.message);
+    }
+
     return {
       enrolled: true,
       enrollment: {
@@ -513,5 +546,118 @@ async function getBrochureLink(courseId) {
   } catch (error) {
     console.warn('Failed to get brochure link:', error.message);
     return process.env.DEFAULT_BROCHURE_LINK || 'https://codexai.com/brochure.pdf';
+  }
+}
+
+/**
+ * Handle payment_link.paid webhook event
+ * Marks the installment as paid, updates enrollmentStatus if all paid.
+ */
+async function handlePaymentLinkPaid(payload) {
+  try {
+    const link = payload.payment_link?.entity || {};
+    const payment = payload.payment?.entity || {};
+    const notes = link.notes || {};
+
+    const enrollmentId = notes.enrollmentId;
+    const installmentNumber = parseInt(notes.installmentNumber || '1', 10);
+    const paymentId = payment.id;
+
+    console.log('Processing payment_link.paid:', { enrollmentId, installmentNumber, paymentId });
+
+    if (!enrollmentId) {
+      console.warn('payment_link.paid: no enrollmentId in notes — skipping EMI update');
+      return formatResponse(200, { message: 'Webhook acknowledged' });
+    }
+
+    // Fetch enrollment
+    const emiResult = await dynamodb
+      .get({ TableName: EMI_TABLE, Key: { enrollmentId } })
+      .promise();
+
+    if (!emiResult.Item) {
+      console.error('EMI enrollment not found:', enrollmentId);
+      return formatResponse(200, { message: 'Webhook acknowledged — enrollment not found' });
+    }
+
+    const enrollment = emiResult.Item;
+    const idx = installmentNumber - 1;
+    const now = new Date().toISOString();
+
+    if (enrollment.schedule[idx]) {
+      enrollment.schedule[idx] = {
+        ...enrollment.schedule[idx],
+        status: 'paid',
+        paymentId,
+        paidAt: new Date(payment.created_at ? payment.created_at * 1000 : Date.now()).toISOString(),
+      };
+    }
+
+    const paidCount = enrollment.schedule.filter((s) => s.status === 'paid').length;
+    const allPaid = paidCount >= enrollment.totalInstallments;
+
+    enrollment.paidInstallments = paidCount;
+    enrollment.enrollmentStatus = allPaid ? 'completed' : 'active';
+    enrollment.updatedAt = now;
+
+    await dynamodb.put({ TableName: EMI_TABLE, Item: enrollment }).promise();
+
+    // Update the master payment record
+    const paidAmount = enrollment.schedule
+      .filter((s) => s.status === 'paid')
+      .reduce((acc, s) => acc + s.amount, 0);
+
+    const paymentUpdateParams = {
+      TableName: PAYMENTS_TABLE,
+      Key: { paymentId: `emi_pending_${enrollmentId}_1` },
+      UpdateExpression:
+        'SET #status = :status, paidInstallments = :paid, paidAmount = :paidAmt, pendingAmount = :pendingAmt, updatedAt = :now',
+      ExpressionAttributeNames: { '#status': 'status' },
+      ExpressionAttributeValues: {
+        ':status': allPaid ? 'completed' : 'emi_partial',
+        ':paid': paidCount,
+        ':paidAmt': paidAmount,
+        ':pendingAmt': enrollment.totalAmount - paidAmount,
+        ':now': now,
+      },
+    };
+
+    try {
+      await dynamodb.update(paymentUpdateParams).promise();
+    } catch (dbErr) {
+      console.warn('Failed to update payment record for EMI:', dbErr.message);
+    }
+
+    // Update BATCHES master enrollment table for EMI installment
+    try {
+      await dynamodb.update({
+        TableName: BATCHES_TABLE,
+        Key: { batchId: enrollmentId },
+        UpdateExpression:
+          'SET amountPaid = :paidAmt, pendingAmount = :pendingAmt, paymentStatus = :status, paidInstallments = :paid, updatedAt = :now',
+        ExpressionAttributeValues: {
+          ':paidAmt': paidAmount,
+          ':pendingAmt': enrollment.totalAmount - paidAmount,
+          ':status': allPaid ? 'completed' : 'emi_partial',
+          ':paid': paidCount,
+          ':now': now,
+        },
+      }).promise();
+    } catch (batchErr) {
+      console.warn('Failed to update BATCHES record for EMI installment:', batchErr.message);
+    }
+
+    return formatResponse(200, {
+      message: allPaid
+        ? `All ${enrollment.totalInstallments} installments paid — enrollment complete!`
+        : `Installment ${installmentNumber}/${enrollment.totalInstallments} marked as paid.`,
+      enrollmentId,
+      installmentNumber,
+      paidInstallments: paidCount,
+      enrollmentComplete: allPaid,
+    });
+  } catch (error) {
+    console.error('handlePaymentLinkPaid error:', error);
+    return formatResponse(200, { message: 'Webhook acknowledged with error', error: error.message });
   }
 }

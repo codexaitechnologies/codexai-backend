@@ -10,6 +10,7 @@ const razorpay = new Razorpay({
 
 const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || `payments-${process.env.STAGE || 'dev'}`;
 const COURSES_TABLE = process.env.COURSES_TABLE;
+const BATCHES_TABLE = process.env.BATCHES_TABLE || 'codexai-batches-dev';
 
 /**
  * Verify Razorpay payment signature and confirm payment
@@ -127,6 +128,31 @@ exports.handler = async (event) => {
     } catch (emailError) {
       console.error('Failed to send payment confirmation email:', emailError.message);
       // Non-blocking — payment is already verified
+    }
+
+    // Write to BATCHES master enrollment table
+    try {
+      await dynamodb.put({
+        TableName: BATCHES_TABLE,
+        Item: {
+          batchId: body.razorpay_payment_id,
+          userId: paymentRecord.userId || 'guest',
+          paymentId: body.razorpay_payment_id,
+          amountPaid: paymentRecord.amount,
+          pendingAmount: 0,
+          courseId: paymentRecord.courseId || 'unknown',
+          courseName,
+          enrollmentDate: paymentRecord.createdAt,
+          paymentStatus: 'paid',
+          paymentType: 'full',
+          studentName: paymentRecord.fullName,
+          email: paymentRecord.email,
+          createdAt: paymentRecord.createdAt,
+          updatedAt: new Date().toISOString(),
+        },
+      }).promise();
+    } catch (batchErr) {
+      console.warn('Failed to write BATCHES record:', batchErr.message);
     }
 
     return formatResponse(200, {

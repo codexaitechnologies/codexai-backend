@@ -105,6 +105,7 @@ exports.handler = async (event) => {
         ...(body.highlights && { highlights: body.highlights }),
         ...(body.curriculum && { curriculum: body.curriculum }),
         ...(body.outcomes && { outcomes: body.outcomes }),
+        ...(body.emiInstallments && { emiInstallments: body.emiInstallments }),
         createdAt: timestamp,
         updatedAt: timestamp,
       },
